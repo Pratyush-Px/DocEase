@@ -1,0 +1,10 @@
+{
+  "executionEnvironments": [
+    {
+      "root": "backend-issue-matcher",
+      "extraPaths": ["backend-issue-matcher"]
+    }
+  ],
+  "venvPath": "backend-issue-matcher",
+  "venv": "myenv"
+}

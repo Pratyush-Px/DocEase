@@ -1,0 +1,242 @@
+[
+  {
+    "title": "Broken Link Chapter 2: Use_the_Tools_Available",
+    "description": "[LCOV](http://ltp.sourceforge.net/coverage/lcov.php) ",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/169",
+    "created_at": "2024-10-16T00:44:47Z",
+    "comments": 0
+  },
+  {
+    "title": "Broken Link - 11 Further Reading",
+    "description": "## This link is obsolete:\r\n-  https://www.gitbook.com/book/alexastva/the-ultimate-question-of-programming-refactoring-/details - The Ultimate Question of Programming, Refactoring, and Everything \r\n## New link:\r\n- https://alexastva.gitbooks.io/the-ultimate-question-of-programming-refactoring- - The Ultimate Question of Programming, Refactoring, and Everything \r\n",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/168",
+    "created_at": "2024-09-05T18:52:11Z",
+    "comments": 1
+  },
+  {
+    "title": "C++ Practice ",
+    "description": "",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/167",
+    "created_at": "2024-08-28T19:21:38Z",
+    "comments": 0
+  },
+  {
+    "title": "Consider adding LLVM bolt to the tooling section",
+    "description": "LLVM bolt (https://github.com/llvm/llvm-project/tree/main/bolt): Bolt is a post-link optimizer developed to speed up large applications. It achieves the improvements by optimizing application's code layout based on execution profile gathered by sampling profiler, such as Linux perf tool.\r\n\r\nConsider adding this to the tools list.",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/161",
+    "created_at": "2024-03-30T20:12:55Z",
+    "comments": 0
+  },
+  {
+    "title": "Infer might be added to the static code analyzer section",
+    "description": "I have recently discovered infer:\r\nhttps://github.com/facebook/infer\r\nwhich has found a possible null pointer dereferencing in my c++ codebase, which both clang-tidy and cppcheck did not find.\r\nSo I am confident, that it could be included to the list of suggested tools.\r\n\r\nCheers!",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/160",
+    "created_at": "2024-02-09T10:52:51Z",
+    "comments": 1
+  },
+  {
+    "title": "MSVC /Wall is not unusable because of standard library headers",
+    "description": "The current wording reads \"`/Wall` - Also warns on files included from the standard library, so it's not very useful and creates too many extra warnings.\" \u2013 this reason does not seem to hold, because `/external` (i.e. `/external:anglebrackets`) exists and is effective in preventing `/Wall` warnings in the standard headers too.\r\n\r\nA better reason to avoid `/Wall` would be a large number of informational diagnostics (i.e. https://docs.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-1-c4711?view=msvc-170) - but then again, these can be disabled individually.",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/144",
+    "created_at": "2022-03-07T07:38:06Z",
+    "comments": 0
+  },
+  {
+    "title": "MSVC more standards conformance",
+    "description": "The [/Zc](https://learn.microsoft.com/en-us/cpp/build/reference/zc-conformance?view=msvc-170) flag has a couple of conformance related changes that are not enabled by default, the /permissive- flag or the /std:c++17 and /std:c++20 flags.\r\n\r\nAs far as I understand the documentation, these include:\r\n* /Zc:throwingNew\r\n* /Zc:__cplusplus\r\n* /Zc:preprocessor\r\n* /Zc:inline\r\n* /Zc:referenceBinding\r\n* /Zc:strictStrings\r\n* /Zc:templateScope\r\n\r\nThere are also two non-/Zc flags that I am aware of, that have an impact on conformance:\r\n* /await:strict\r\n* /volatile:iso\r\n\r\nIf interested, I could create a PR?",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/152",
+    "created_at": "2023-01-05T20:23:15Z",
+    "comments": 0
+  },
+  {
+    "title": "What is the difference in \"\\n\" AND '\\n'",
+    "description": "08-Considering_Performance.md\r\nin the section **Char is a char, string is a string** (third from last)\r\nHow the performance in CPU different for \"\\n\" and '\\n' ?",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/148",
+    "created_at": "2022-08-29T08:57:10Z",
+    "comments": 2
+  },
+  {
+    "title": "gitbook link broken",
+    "description": "The links to the old gitbook page, purported to provide downloadable editions, are now dead links. Particularly https://www.gitbook.com/book/lefticus/cpp-best-practices , which just lands on the generic GitBook homepage.\r\n\r\nAs a workaround, I am using the release artifacts posted to GitHub.",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/131",
+    "created_at": "2021-03-17T20:32:18Z",
+    "comments": 1
+  },
+  {
+    "title": "Clarify that marking certain member variables const can hinder performance",
+    "description": "In the 03-Style document, I read the following sentence:\r\n\r\n> If the member variable is not expected to change after the initialization, then mark it const.\r\n\r\nHowever, we know that if, for example, we mark a container as `const`, we prevent it from being moved, possibly hindering performance. Marking fields as `const` is useful to enforce invariants; however, it \"interferes\" with performance. If both const correctness and performance are important, one could leave the field non-const, make it private and define a field getter.",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/147",
+    "created_at": "2022-06-07T21:55:47Z",
+    "comments": 3
+  },
+  {
+    "title": "02-Use_the_Tools_Available.md -> cmake/coite ist deprecated",
+    "description": "coitre declares itself as depreacted:\r\n\r\nfrom https://github.com/sakra/cotire/:\r\n\r\n> The functionality provided by cotire has been superseded by features added to [CMake 3.16](https://cmake.org/cmake/help/latest/release/3.16.html). Support for [pre-compiling](https://cmake.org/cmake/help/latest/command/target_precompile_headers.html) and [unity builds](https://cmake.org/cmake/help/v3.16/prop_tgt/UNITY_BUILD.html) is now built into CMake. Thus, there will not be any further updates or support for this project.",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/145",
+    "created_at": "2022-04-21T05:42:25Z",
+    "comments": 0
+  },
+  {
+    "title": "Source control tools are not source control hosing services",
+    "description": "It is stated:\r\n> Source control is an absolute necessity for any software development project. If you are not using one yet, start using one.\r\n\r\nWhich is true, but then there is a list of source control hosting services, which are not the same thing.",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/141",
+    "created_at": "2021-12-23T21:54:07Z",
+    "comments": 0
+  },
+  {
+    "title": "Const as Much as Possible (Not!)",
+    "description": "While \"Const as Much as Possible\" is generally good practice, `const` should not be directly used on function declaration parameters, including member functions.\r\n\r\nA quick example:\r\n\r\n```\r\nvoid foo (int x);\r\nvoid foo (int const x) {return x * 2;}\r\n\r\nvoid bar (char const * s);\r\nvoid bar (char const * const s) {puts(s);}\r\n```\r\n\r\nNotice I said \"directly\".  Hence `s` isn't `const` in the declaration, but is in the definition (direct), but what `s` points at is `const` in both, and must match in both (indirect).\r\n\r\nThe reason for doing this is to not leak a function's implementation details.  Because whether a function treats a parameter variable as `const` or not is an implementation detail of the function.  And if a function gets modified such that its parameter is no longer treated as `const`, then callers of that function shouldn't have to be recompiled.\r\n\r\nThis is a difference between C and C++.  In C, the function definition's parameter type(s) must exactly match that of the function declarations.  (At least it used to.  I haven't actually developed anything significant with modern C.)",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/128",
+    "created_at": "2020-11-18T11:10:21Z",
+    "comments": 3
+  },
+  {
+    "title": "Tools to add ",
+    "description": "Static Analysis \r\nFlaw Finder -- https://dwheeler.com/flawfinder/\r\n\r\nOther Tools\r\nSource Trail -- https://www.sourcetrail.com/\r\nHerb Grind -- http://herbgrind.ucsd.edu/\r\nApproval Tests -- https://github.com/approvals/ApprovalTests.cpp\r\n\r\nIf you would rather me make a pull request to add these just let me know.",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/115",
+    "created_at": "2019-12-16T20:01:42Z",
+    "comments": 1
+  },
+  {
+    "title": "Never Mix Tabs and Spaces - revisited",
+    "description": "I was always in the - use only spaces - group for coding.\r\nUntil recently, when I started using clang-format. It has many options:\r\n\r\n> UseTab (UseTabStyle)\r\n>     The way to use tab characters in the resulting file.\r\n>     Possible values:\r\n>         UT_Never (in configuration: Never) Never use tab.\r\n>         UT_ForIndentation (in configuration: ForIndentation) Use tabs only for indentation.\r\n>         UT_ForContinuationAndIndentation (in configuration: ForContinuationAndIndentation) Use tabs only for line continuation and indentation.\r\n>         UT_Always (in configuration: Always) Use tabs whenever we need to fill whitespace that spans at least from one tab stop to the next one.\r\n\r\nNow I use the setting: ForIndentation\r\nWhich uses Tabs for indenting the the block, and if more indentation is required for aligning, then spaces are used.\r\nSo it doesn't matter wether someone has 2, 4, or 8 spaces per tab, the code is always aligned correctly.\r\n\r\nCurrently my stance is: use Tab for indenting, use space for aligning.",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/77",
+    "created_at": "2017-09-22T09:29:16Z",
+    "comments": 2
+  },
+  {
+    "title": "consider inlining links",
+    "description": "Many links seem to be awkwardly worded or raw URLs. Like this one from the \"Considering Threadability\" section:\r\n\r\n`\tFor more information see the following article from Herb Sutter: http://herbsutter.com/2013/05/24/gotw-6a-const-correctness-part-1-3/\r\n\t`\r\nInstead, how about something more readable?\r\n\r\n`\tFor more information see [Const Correctness, Part 1](http://herbsutter.com/2013/05/24/gotw-6a-const-correctness-part-1-3/) by Herb Sutter.`\r\n\t\r\n",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/119",
+    "created_at": "2020-03-07T01:50:22Z",
+    "comments": 0
+  },
+  {
+    "title": "closing sentence in \"Style\" section doesn't make sense",
+    "description": "It says \"This article provides a background and explains techniques for implementing nearly 100% of the time.\" which doesn't make sense.\r\n\r\nMaybe \"This article provides a background and explains techniques for implementing The Rule of Zero in the vast majority of cases\", or something like that. Hard to tell, but it should be fixed.",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/118",
+    "created_at": "2020-03-07T01:12:34Z",
+    "comments": 0
+  },
+  {
+    "title": "Wiki accident / Security issue",
+    "description": "Sorry, I've accidentally **deleted** the wiki's main file. I thought it would redirect me to fork the repo to do that... \ud83d\ude11 \r\nWhen I tried to revert the commit that destroyed the `Initial-Outline.md`, github said that I don't have writing permissions (but how it allowed me to delete the file in first place?).  \r\n\r\nCan anybody revert it?\r\n\r\nSorry again.",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/114",
+    "created_at": "2019-12-10T15:05:42Z",
+    "comments": 0
+  },
+  {
+    "title": "Rule of Zero \"original article\" link is dead.",
+    "description": "",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/107",
+    "created_at": "2019-08-08T16:58:55Z",
+    "comments": 1
+  },
+  {
+    "title": "Link to gitbook broken",
+    "description": "The gitbook link in the readme links to the legacy version of gitbook, new gitbook users are unable to login through the legacy portal. Get 401 error when I go to login after clicking the gitbook link in the readme. I can still download the PDF book and read it in an online viewer, but if I wanted to preview the book through gitbook's website I would not be able to. ",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/111",
+    "created_at": "2019-10-02T19:23:03Z",
+    "comments": 0
+  },
+  {
+    "title": "Underflow / overflow terms are used incorrectly",
+    "description": "03-Style - line 368\r\n\r\nThe text mentions \"integer underflow\". There is no such thing. Underflow (that is, truncation to zero) happens only for floating point types.\r\n\r\nhttps://stackoverflow.com/questions/6360049/what-are-arithmetic-underflow-and-overflow-in-c ",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/108",
+    "created_at": "2019-08-22T11:31:58Z",
+    "comments": 2
+  },
+  {
+    "title": "Add Table of Contents to pages for viewing via github",
+    "description": "_Summary: There's a really easy way to do this, and keep it uptodate - this ticket is to explore whether you would accept a pull-request to implement it..._\r\n\r\n## Motivation\r\n\r\nHaving seen the Table of Contents links on some docs on github, I've found them to be really useful in getting any overview of the topics covered, and then also for really easy navigation.\r\n\r\nExamples are:\r\n\r\n* https://github.com/catchorg/Catch2/blob/master/docs/assertions.md#top\r\n* https://github.com/approvals/ApprovalTests.cpp/blob/master/doc/Contributing.md#top\r\n\r\nI keep coming back to https://github.com/lefticus/cppbestpractices/blob/master/02-Use_the_Tools_Available.md to look for different types of information, and it would save a lot of time and scrolling if users could jump to the section of interest.\r\n\r\n## Alternatives considered\r\n\r\nSearching through the existing issues, I saw #9 which said the solution was to use gitpages, \r\n\r\nI downloaded the gitpages PDF, and it doesn't have tables of contents for sections.\r\n\r\nAnd its \"Read\" feature gives \"This site can't be reached\" - ERR_CONNECTION_TIMED_OUT -  https://lefticus.gitbooks.io/cpp-best-practices/content/ \r\n\r\nGiven how quickly github.com loads Markdown pages, coupled with the convenience of being able to see page histories there and even possibly suggest improvements to the docs, I feel that it's preferable to add Table of Contents to each of the live pages on github.\r\n\r\n## Possible implementation\r\n\r\nFor ApprovalTests.cpp, we are using https://github.com/thlorenz/doctoc\r\n\r\nIt's easy to install:\r\n\r\n`npm install -g doctoc`\r\n\r\nThen we run it with this on Windows:\r\n\r\n`doctoc --title **Contents** .`\r\n\r\nor this on Unix:\r\n\r\n`doctoc --title '**Contents**' .`\r\n\r\nA minor enhancement is to move the generated ToC to after the level-1 heading, so that only level-2 and above headings are included in the ToC.\r\n\r\n## Consequences\r\n\r\nThe nice this is that this doesn't require all `cppbestpractices` contributors to have this tool.\r\n\r\nMany edits won't change the ToC, and for those that do, `doctoc` could be run later by someone who has the tool.  (I'd be happy to do that, but it would be better done by someone who has commit-permission on the repo)\r\n\r\n",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/103",
+    "created_at": "2019-04-19T12:30:49Z",
+    "comments": 1
+  },
+  {
+    "title": "Bazel on Windows",
+    "description": "In the \"Use The Tools Available\" section, it says that bazel is \"MacOS and Linux only.\" According to bazel's documentation, Windows is supported: https://docs.bazel.build/versions/master/windows.html.",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/91",
+    "created_at": "2018-10-30T03:16:38Z",
+    "comments": 1
+  },
+  {
+    "title": "Consider adding Compiler Explorer links to Considering Performance chapter",
+    "description": "A counter point to the `std::bind` section seems to prove there isn't a runtime overhead for the example given: https://godbolt.org/g/ZcUgRr",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/85",
+    "created_at": "2018-03-17T10:04:21Z",
+    "comments": 2
+  },
+  {
+    "title": "Consider Avoiding Boolean Parameters",
+    "description": "I'd like to make the observation that perhaps this is a good place for templated functions instead of runtime checks. \r\nIf so, how often would you see this in production code?",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/99",
+    "created_at": "2018-12-19T19:56:23Z",
+    "comments": 0
+  },
+  {
+    "title": "A case against UPPERCASE constants",
+    "description": "My argument is that avoiding all-uppercase for all non-macros avoids those hard to understand errors you get when you use a constant or enum value that was already defined in some external header.\r\n\r\nEver had to do `#undef ERROR` after including _Windows.h_ ?\r\n",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/96",
+    "created_at": "2018-11-23T12:29:35Z",
+    "comments": 3
+  },
+  {
+    "title": "Forward Declarations",
+    "description": "Regarding \"Forward Declare When Possible\", I think you should (almost) never forward declare for the following reasons:\r\n\r\n1. It makes backward compatible refactorings more complicated and prone to breakage. This is the reason that the the C++ Standard Library and abseil forbid forward declarations. In C++ you can often refactor a function into a lambda or function object or into a template and keep backward compatibility with uses of the function. However, the signature will have changed.\r\n\r\n2. It is dangerous. Forward declarations are an easy way to get hard to diagnose errors like ODR violations. In addition, if something changed in a header you were depending on, forward declarations postpone the error to link-time or to compile time.\r\n\r\n3. It is a short term optimization. Hopefully modules in C++ will come soon and make this better. But even without modules, such techniques as pre-compiled headers are safer and work in more scenarios.\r\n\r\nBased on these, I think better advice would be to avoid forward declarations.\r\n",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/89",
+    "created_at": "2018-10-04T21:40:47Z",
+    "comments": 1
+  },
+  {
+    "title": "External warning label for headers in MSVC",
+    "description": "Currently the guide recommends against `/Wall` for MSVC because the system headers do not comply. https://blogs.msdn.microsoft.com/vcblog/2017/12/13/broken-warnings-theory/ has an experimental feature that lets you turn off warnings for headers outside of your control.\r\n\r\n`/external:anglebrackets` \u2013 a switch that allows a user to treat all headers included via #include <> (as opposed to #include \"\") as external headers\r\n\r\nMight be good behavior to use the above switch assuming your MSVC compiler supports it.",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/88",
+    "created_at": "2018-08-08T23:06:30Z",
+    "comments": 0
+  },
+  {
+    "title": "When/how to use asserts",
+    "description": "There's a really good point in [Style.md](https://github.com/lefticus/cppbestpractices/blob/master/03-Style.md) on how not to use asserts, but should we document when to use them as well? I think the c++ usage is quite different to other languages, where asserts are used for test code but not for dev code.",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/71",
+    "created_at": "2017-05-31T00:19:55Z",
+    "comments": 5
+  },
+  {
+    "title": "Warning flag",
+    "description": "Hello,\r\n\r\nIn your [03-Style.md](https://github.com/lefticus/cppbestpractices/blob/master/03-Style.md) best practice file you talk about using `nullptr` instead of `0` or `NULL` which is a very good things to do.\r\n\r\nThere is a flag in GCC that warn the user about using `0` (or `NULL`) instead of `nullptr`: `-Wzero-as-null-pointer-constant`. Unfortunately this flag does not exists for clang and I don't know if it does for MSVC.\r\n\r\nI think this should be a good idea to add this flag in your warning flag list (https://github.com/lefticus/cppbestpractices/blob/master/02-Use_the_Tools_Available.md#gcc--clang).\r\n\r\nBest regards",
+    "labels": [],
+    "url": "https://github.com/cpp-best-practices/cppbestpractices/issues/66",
+    "created_at": "2017-04-26T19:33:12Z",
+    "comments": 0
+  }
+]
