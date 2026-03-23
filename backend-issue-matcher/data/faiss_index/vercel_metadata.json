@@ -1,0 +1,368 @@
+[
+  {
+    "title": "format() produces output that parse() cannot parse back (roundtrip failure with large numbers)",
+    "description": "## Bug Report\n\n### Description\n`format()` returns values in scientific notation for very large numbers, \nbut `parse()` cannot handle scientific notation \u2014 returning `NaN`.\nThis breaks the roundtrip contract between the two functions.\n\n### Steps to Reproduce\n```js\nimport { ms } from 'ms';\n\nconst out = ms(Number.MAX_VALUE);\nconsole.log(out);        // \"5.696545792019405e+297y\"\nconsole.log(ms(out));    // NaN \u2014 cannot parse its own output\nExpected Behavior\nEither:\nformat() should not produce scientific notation output, OR\nparse() should handle scientific notation input\nActual Behavior\nformat() outputs 5.696545792019405e+297y\nparse() returns NaN for that same string\nEnvironment\nms version: 4.0.0\nNode.js on Android/Termux",
+    "labels": [],
+    "url": "https://github.com/vercel/ms/issues/284",
+    "created_at": "2026-03-21T07:03:17Z",
+    "comments": 0
+  },
+  {
+    "title": "Returning undefined with mo, month, months",
+    "description": "Hello.\nI'm really surprised that I don't see the issue with \"mo\", \"month\", \"months\" here but I have to say. It returns undefined on months.\n\nWindows 11\nms 2.1.3\nnodejs 22.17.1",
+    "labels": [],
+    "url": "https://github.com/vercel/ms/issues/270",
+    "created_at": "2025-09-19T22:27:54Z",
+    "comments": 3
+  },
+  {
+    "title": "feat: add i18n/locale support to format()",
+    "description": "## Summary\n\n  `ms` currently formats millisecond values using English-only unit strings. This proposal adds a `locale` option to `format()` so callers can receive output in other\n  languages without any change to parsing behavior.\n\n  ## Motivation\n\n  Libraries that surface human-readable durations (e.g. error messages, UI labels, CLI output) are often used in multilingual products. Today every consumer has to\n  post-process `format()` output to localize it. A first-class `locale` option removes that burden.\n\n  ## Proposed API\n\n  ```ts\n  import { format, fr, de, ar, es, zh } from 'ms';\n\n  // short\n  format(60000, { locale: fr });             // '1min'\n  format(3600000, { locale: de });           // '1Std'\n\n  // long\n  format(1000, { locale: fr, long: true }); // '1 seconde'\n  format(2000, { locale: fr, long: true }); // '2 secondes'\n  format(3600000, { locale: zh, long: true }); // '1 \u5c0f\u65f6'\n\n  Design\n\n  - New exported LocaleDefinition interface with shortUnits, longUnits (singular/plural tuples), and an optional isPlural callback.\n  - Options gains an optional locale?: LocaleDefinition field. Omitting it keeps the exact existing English behavior \u2014 fully backward compatible.\n  - Built-in locales: fr, ar, de, es, zh.\n  - parse() / parseStrict() remain English-only (locale-aware parsing would require per-language grammar rules that go beyond the scope of this package).\n  - Custom locales are trivially supported \u2014 callers just pass their own LocaleDefinition object.\n\n  Custom locale example\n\n  const pt: LocaleDefinition = {\n    shortUnits: { ms: 'ms', s: 's', m: 'min', h: 'h', d: 'd', w: 'sem', mo: 'm\u00eas', y: 'ano' },\n    longUnits: {\n      millisecond: ['milissegundo', 'milissegundos'],\n      second:      ['segundo',      'segundos'],\n      minute:      ['minuto',       'minutos'],\n      hour:        ['hora',         'horas'],\n      day:         ['dia',          'dias'],\n      week:        ['semana',       'semanas'],\n      month:       ['m\u00eas',          'meses'],\n      year:        ['ano',          'anos'],\n    },\n    isPlural: (v) => v !== 1,\n  };\n\n  format(2000, { locale: pt, long: true }); // '2 segundos'\n\n  Checklist\n\n  - Backward compatible \u2014 existing tests unchanged\n  - New LocaleDefinition interface exported\n  - Built-in locales: fr, ar, de, es, zh\n  - Full test coverage (format, parse, parseStrict) per locale\n  - README updated with usage and custom locale walkthrough\n  - 100% statement/branch/function/line coverage maintained",
+    "labels": [],
+    "url": "https://github.com/vercel/ms/issues/278",
+    "created_at": "2026-02-26T01:35:49Z",
+    "comments": 0
+  },
+  {
+    "title": "Release of v4.0.0",
+    "description": "Hello, I think it's quite awesome that this package is now written in TypeScript! Since it's been over half a year since the last v3 canary, I would like to ask whether a final release is planned yet.",
+    "labels": [],
+    "url": "https://github.com/vercel/ms/issues/184",
+    "created_at": "2022-04-30T17:29:44Z",
+    "comments": 43
+  },
+  {
+    "title": "Investigate if `Temporal` could replace `ms`",
+    "description": "Now that `Temporal` has been standardized and ships in most browsers and will likely ship in a future version of Node.js, we should see if it could replace `ms`.\n\nhttps://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal#browser_compatibility\n\nA few examples:\n\n```js\nTemporal.Duration.from({ seconds: 5 }).total({ unit: 'milliseconds' });  // 5000\nTemporal.Duration.from({ minutes: 3 }).total({ unit: 'milliseconds' });  // 180000\nTemporal.Duration.from({ hours: 2 }).total({ unit: 'milliseconds' }); // 7200000\nTemporal.Duration.from({ days: 1 }).total({ unit: 'milliseconds' }); // 86400000\n```\n\nThere is even short hand string syntax (ISO 8601) such as:\n\nhttps://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/Duration#iso_8601_duration_format\n\n```js\nTemporal.Duration.from('PT5S').total({ unit: 'milliseconds' });  // 5000\nTemporal.Duration.from('PT3M').total({ unit: 'milliseconds' });  // 180000\nTemporal.Duration.from('PT2H').total({ unit: 'milliseconds' }); // 7200000\nTemporal.Duration.from('P1D').total({ unit: 'milliseconds' }); // 86400000\n```\n\nThere are still other features to consider and it only makes sense if we can make `ms` smaller than it already is.\n\nIn an ideal world, you wouldn't need to install `ms` at all \ud83d\ude04 ",
+    "labels": [
+      "question"
+    ],
+    "url": "https://github.com/vercel/ms/issues/274",
+    "created_at": "2026-02-04T16:36:19Z",
+    "comments": 2
+  },
+  {
+    "title": "Unnecessary math",
+    "description": "In the index.ts file, there is math at the top that can be simplified to improve performance  by removing the multiplication and just putting the output of it directly ",
+    "labels": [],
+    "url": "https://github.com/vercel/ms/issues/271",
+    "created_at": "2025-10-31T16:59:11Z",
+    "comments": 1
+  },
+  {
+    "title": "Performance Regression: v4.0.0 is >40% slower than v2.1.3",
+    "description": "## Performance Regression: v4.0.0 is >40% slower than v2.1.3\n\n* Library: ms\n* Versions Compared: \n  * v2.1.3 (CommonJS) \n  * v4.0.0 (TypeScript/ESM)\n\n## Description\n\nAfter benchmarking the new TypeScript-based version (v4.0.0) against the legacy version (v2.1.3), I observed a significant performance degradation. While the type safety and ESM support in v4 are excellent additions, the runtime overhead for parsing and formatting has increased notably.\n\n## Steps to Reproduce / Benchmark Code\n\nThe following benchmark was executed using benchmark.js in a Node.js 20.x environment.\n```javascript\nimport Benchmark from 'benchmark';\nimport msV2 from 'ms'; // v2.1.3\nimport {ms as msV4} from './dist/index.js'; // v4.0.0 compiled\n\nconst runBenchmarkSuite = (iterations) => {\n    const suite = new Benchmark.Suite(`Prueba: ${iterations} iteraciones`);\n    console.log(`--- Iniciando Benchmark: ${iterations} ops ---`);\n    suite\n        .add('ms@2.1.3', () => {\n            for (let i = 0; i < iterations; i++) {\n                msV2('2 days');\n                msV2(60000);\n            }\n        })\n        .add('ms@4.0.0', () => {\n            for (let i = 0; i < iterations; i++) {\n                msV4('2 days');\n                msV4(60000);\n            }\n        })\n        .on('cycle', (event) => console.log(String(event.target)))\n        .on('complete', function() {\n            const fastest = this.filter('fastest').map('name')[0];\n            const fastestHz = this.filter('fastest')[0].hz;\n            const slowestHz = this.filter('slowest')[0].hz;\n            const percentDiff = ((fastestHz - slowestHz) / slowestHz * 100).toFixed(2);\n            console.log(`Fastest is ${fastest} (${percentDiff}% faster)`)\n        })\n        .run({ async: false });\n};\n\nconst magnitudes = [10,100, 1_000,10_000,100_000];\nmagnitudes.forEach(m => runBenchmarkSuite(m));\n``` \nObserved Results\n```\n--- Iniciando Benchmark: 10 ops ---\nms@2.1.3 x 1,149,452 ops/sec \u00b11.85% (90 runs sampled)\nms@4.0.0 x 781,224 ops/sec \u00b12.19% (88 runs sampled)\nFastest is ms@2.1.3 (47.13% faster)\n--- Iniciando Benchmark: 100 ops ---\nms@2.1.3 x 123,077 ops/sec \u00b12.54% (86 runs sampled)\nms@4.0.0 x 82,772 ops/sec \u00b10.91% (86 runs sampled)\nFastest is ms@2.1.3 (48.69% faster)\n--- Iniciando Benchmark: 1000 ops ---\nms@2.1.3 x 12,489 ops/sec \u00b10.60% (90 runs sampled)\nms@4.0.0 x 7,768 ops/sec \u00b10.96% (92 runs sampled)\nFastest is ms@2.1.3 (60.77% faster)\n--- Iniciando Benchmark: 10000 ops ---\nms@2.1.3 x 1,333 ops/sec \u00b10.88% (97 runs sampled)\nms@4.0.0 x 794 ops/sec \u00b11.02% (90 runs sampled)\nFastest is ms@2.1.3 (67.95% faster)\n--- Iniciando Benchmark: 100000 ops ---\nms@2.1.3 x 135 ops/sec \u00b10.71% (87 runs sampled)\nms@4.0.0 x 78.41 ops/sec \u00b11.17% (74 runs sampled)\nFastest is ms@2.1.3 (72.73% faster)\n```\n## Technical Hypothesis\n\nThe degradation seems to stem from the added complexity in the TypeScript rewrite, specifically:\n1. Regex Overhead: Possible re-evaluation or more complex matching patterns to satisfy strict type validations.\n2. Transpilation Artifacts: The resulting code in dist/ might include extra logic or helpers that are less optimized by the V8 engine compared to the original handwritten JS.\n \n## Impact\n\nIn high-throughput environments, this overhead accumulates. While negligible for single calls, it represents a regression in the library's core efficiency.\n\n",
+    "labels": [],
+    "url": "https://github.com/vercel/ms/issues/273",
+    "created_at": "2025-12-21T04:31:17Z",
+    "comments": 1
+  },
+  {
+    "title": "90 minutes is rounded up to 2 hours",
+    "description": "When providing the `ms` function with the number `5400000`, it's returning `2h`, or `2 hours` if verbose is true. This is not the desired behavior, as `5400000` ms is 90 minutes, or 1,5 hours",
+    "labels": [],
+    "url": "https://github.com/vercel/ms/issues/142",
+    "created_at": "2020-08-01T16:14:26Z",
+    "comments": 1
+  },
+  {
+    "title": "Provenance",
+    "description": "Please enable provenance. `ms` is one of the most downloaded packages on NPM that doesn't have provenance enabled.\n\nYou can find more information here:\n- https://docs.npmjs.com/generating-provenance-statements\n- https://docs.npmjs.com/trusted-publishers",
+    "labels": [],
+    "url": "https://github.com/vercel/ms/issues/268",
+    "created_at": "2025-09-08T16:42:31Z",
+    "comments": 1
+  },
+  {
+    "title": "give the readme a once-over ahead of the 4.0 launch",
+    "description": "and probably rename to `README.md`?  does that even matter?",
+    "labels": [],
+    "url": "https://github.com/vercel/ms/issues/240",
+    "created_at": "2025-07-30T15:29:01Z",
+    "comments": 1
+  },
+  {
+    "title": "update repo settings to delete branch on merge",
+    "description": "",
+    "labels": [],
+    "url": "https://github.com/vercel/ms/issues/239",
+    "created_at": "2025-07-30T15:26:29Z",
+    "comments": 2
+  },
+  {
+    "title": "PR lint of PR title",
+    "description": "see: https://github.com/vercel/nft/blob/main/.github/workflows/pr.yml",
+    "labels": [],
+    "url": "https://github.com/vercel/ms/issues/241",
+    "created_at": "2025-07-30T15:30:13Z",
+    "comments": 0
+  },
+  {
+    "title": "remove @types/ms once this package is published with types",
+    "description": "we're working on getting this package published with types.  once we do that, we should follow the deprecation process for definitely-typed to remove @types/ms as it will not be needed anymore",
+    "labels": [],
+    "url": "https://github.com/vercel/ms/issues/231",
+    "created_at": "2025-07-29T20:09:17Z",
+    "comments": 0
+  },
+  {
+    "title": "Conversions from milliseconds are rounded",
+    "description": "```\r\nms(\"2.5 hrs\") // 9000000\r\nms(\"9000000\") // 3h\r\nms(\"9000000\", { long: true ) // 3 hours\r\n```\r\n\r\nThe above code returns `\"3h\"` or `\"3 hours\"` when a total of `2.5 hrs` in milliseconds is parsed.\r\n\r\nIf there are technical limitations to returning accurate string representations, it would be ideal to provide an example and explanation in the repository **readme.md**.\r\n\r\n",
+    "labels": [],
+    "url": "https://github.com/vercel/ms/issues/140",
+    "created_at": "2020-07-17T21:03:57Z",
+    "comments": 3
+  },
+  {
+    "title": "The package is just showing the time in days",
+    "description": "When I try to convert milliseconds, it just shows the number of days and no hours are shown. \r\nLike the actual is 5 days 3 hours. But it shows 5 days only",
+    "labels": [],
+    "url": "https://github.com/vercel/ms/issues/192",
+    "created_at": "2022-08-30T08:24:25Z",
+    "comments": 0
+  },
+  {
+    "title": "Strings with multiple units return `undefined`",
+    "description": "E.g. `5m30s`.\n",
+    "labels": [
+      "patch"
+    ],
+    "url": "https://github.com/vercel/ms/issues/54",
+    "created_at": "2015-09-24T16:19:30Z",
+    "comments": 4
+  },
+  {
+    "title": "Support for decimal place display",
+    "description": "Instead of always round to integer, if it can round to certain decimal place it will be great!\r\n\r\nFor example:\r\n\r\n```js\r\nms(60000, {decimal: 1 })                            // \"1m\"\r\nms(66000, {decimal: 1 })                            // \"1.1m\"\r\nms(-3 * 66000, { long: true, decimal: 1 })          // \"-3.3 minutes\"\r\nms(234234234, { decimal: 2  })                      // \"2.71m\"\r\nms(ms('10.5 hours'), { long: true, decimal: 1 })    // \"10.5 hours\"\r\n```",
+    "labels": [],
+    "url": "https://github.com/vercel/ms/issues/124",
+    "created_at": "2019-10-20T08:51:24Z",
+    "comments": 1
+  },
+  {
+    "title": "Add support for colon-separated times",
+    "description": "eg. \"07:31\" gets parsed as \"07m31s\", \"01:39:25\" is \"01h39m25s\", etc.\n",
+    "labels": [
+      "minor"
+    ],
+    "url": "https://github.com/vercel/ms/issues/24",
+    "created_at": "2013-05-03T00:05:59Z",
+    "comments": 2
+  },
+  {
+    "title": ".",
+    "description": "",
+    "labels": [],
+    "url": "https://github.com/vercel/micro/issues/490",
+    "created_at": "2026-02-09T05:41:43Z",
+    "comments": 0
+  },
+  {
+    "title": "Error: listen EACCES: permission denied 127.0.0.1",
+    "description": "Am getting permission errors even when I open command prompt as administrator.\r\n\r\n```\r\nmicro: Accepting connections on port 3000\r\nmicro: Error: listen EACCES: permission denied 127.0.0.1\r\n    at Server.setupListenHandle [as _listen2] (node:net:1415:21)\r\n    at listenInCluster (node:net:1480:12)\r\n    at Server.listen (node:net:1579:5)\r\n    at startEndpoint (E:\\APP\\node_modules\\micro\\dist\\src\\bin\\micro.js:123:12)\r\n    at start (E:\\APP\\node_modules\\micro\\dist\\src\\bin\\micro.js:145:13)\r\nmicro: Gracefully shutting down. Please wait...\r\n```\r\n\r\n\r\n**Environments:**\r\n\r\n- OS - Windows 11\r\n- Node JS - v16.17.1\r\n- Micro JS - latest verion (10)",
+    "labels": [],
+    "url": "https://github.com/vercel/micro/issues/477",
+    "created_at": "2023-01-26T09:05:21Z",
+    "comments": 2
+  },
+  {
+    "title": "Port binding is not working and multiple endpoint is broken",
+    "description": "Typical usage like this:\r\n\r\n```\r\ntsx ./node_modules/.bin/micro -l tcp://localhost:3010 ./src/service/index.ts\r\n```\r\n\r\nis not working.\r\n\r\nError message:\r\n\r\n```\r\nmicro: Accepting connections on port 3010\r\nmicro: Error: listen EADDRINUSE: address already in use localhost\r\n    at __node_internal_captureLargerStackTrace (node:internal/errors:490:5)\r\n    at __node_internal_uvExceptionWithHostPort (node:internal/errors:589:12)\r\n    at Server.setupListenHandle [as _listen2] (node:net:1724:21)\r\n    at listenInCluster (node:net:1789:12)\r\n    at Server.listen (node:net:1888:5)\r\n    at startEndpoint (/Users/oklas/sdm-queue/node_modules/micro/dist/src/bin/micro.js:123:12)\r\n    at start (/Users/oklas/sdm-queue/node_modules/micro/dist/src/bin/micro.js:145:13)\r\nmicro: Gracefully shutting down. Please wait...\r\nerror Command failed with exit code 1.\r\ninfo Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.\r\n```",
+    "labels": [],
+    "url": "https://github.com/vercel/micro/issues/480",
+    "created_at": "2023-02-17T16:43:49Z",
+    "comments": 0
+  },
+  {
+    "title": "More doucments?",
+    "description": "Hi \r\n\r\nI am so impressed by this micro introduction [youtube](https://www.youtube.com/watch?v=LUSPTD0Ithc&ab_channel=talent.io). However, when I came to this repo I could not find the document with all the features mentioned in that video.  Is there a document site? \r\n\r\nThank you \r\nRon",
+    "labels": [],
+    "url": "https://github.com/vercel/micro/issues/476",
+    "created_at": "2023-01-17T03:11:55Z",
+    "comments": 1
+  },
+  {
+    "title": "v10 broken on windows",
+    "description": "Running micro on windows fail with \r\n\r\n![image](https://user-images.githubusercontent.com/639759/212468495-baad8b22-6c72-4da5-a33b-7d0e5e6c3fba.png)\r\n\r\nI think it's due to the usage of `import(file)` in `handler.ts`.\r\nIt should be fixed with the usage of `pathToFileURL` https://nodejs.org/api/url.html#urlpathtofileurlpath\r\n\r\n```\r\nimport(pathToFileURL(file).href)\r\n```\r\n\r\nThanks for your work on this package !",
+    "labels": [],
+    "url": "https://github.com/vercel/micro/issues/474",
+    "created_at": "2023-01-14T10:55:02Z",
+    "comments": 0
+  },
+  {
+    "title": "Server is not closed properly with Jest",
+    "description": "When used with Jest, it keeps complaining about keeping the server alive.\r\n```\r\nA worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --runInBand --detectOpenHandles to find leaks.\r\n\r\nJest did not exit one second after the test run has completed.\r\n\r\nThis usually means that there are asynchronous operations that weren't stopped in your tests. Consider running Jest with `--detectOpenHandles` to troubleshoot this issue.\r\n```\r\n\r\n```\r\njest --runInBand --detectOpenHandles\r\n```\r\n\r\n```\r\nJest has detected the following 1 open handle potentially keeping Jest from exiting:\r\n\r\n  \u25cf  TCPSERVERWRAP\r\n\r\n      29 |     };\r\n      30 |     server = http.createServer(requestHandler);\r\n    > 31 |     url = await listen(server);\r\n         |                 ^\r\n      32 |   });\r\n      33 | \r\nat Promise (node_modules/test-listen/index.js:4:7)\r\n      at module.exports (node_modules/test-listen/index.js:1:51)\r\n      at Object.<anonymous> (pages/api/status/__tests__/status.test.ts:31:17)\r\n```\r\n\r\nthis is my code\r\n\r\n```\r\nbeforeAll(async () => {\r\n    server = http.createServer(requestHandler);\r\n    url = await listen(server);\r\n});\r\n\r\nafterAll((done: () => void) => {\r\n    server.close(done);\r\n  });\r\n```\r\n\r\nany idea why it's not closing the server?\r\n",
+    "labels": [],
+    "url": "https://github.com/vercel/test-listen/issues/31",
+    "created_at": "2020-06-29T23:47:37Z",
+    "comments": 0
+  },
+  {
+    "title": "No support for HTTPS URLs",
+    "description": "Passing in an HTTPS server into ```listen()``` always returns the HTTP URL.  \r\n\r\nCan support be added for HTTPS server objects?",
+    "labels": [],
+    "url": "https://github.com/vercel/test-listen/issues/29",
+    "created_at": "2020-04-09T16:58:46Z",
+    "comments": 0
+  },
+  {
+    "title": "bail should prevent any further calls to the retrier function",
+    "description": "From the example:\r\n\r\n```js\r\n// Packages\r\nconst retry = require('async-retry')\r\nconst fetch = require('node-fetch')\r\n \r\nawait retry(async bail => {\r\n  // if anything throws, we retry\r\n  const res = await fetch('https://google.com')\r\n \r\n  if (403 === res.status) {\r\n    // don't retry upon 403\r\n    bail(new Error('Unauthorized'))\r\n    // return  <---- don't immediately return here\r\n    throw new Error('Throw after bail'); \r\n  }\r\n \r\n  const data = await res.text()\r\n  return data.substr(0, 500)\r\n}, {\r\n  retries: 5\r\n})\r\n```\r\n\r\nCalling bail will immediately reject the promise returned by `retry`, but if the promise returned by the retirer function is then itself rejected, attempts will continue running in the background until e.g. the max retry count is reached.\r\n\r\nThis can be surprising and result in obscure bugs.",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/69",
+    "created_at": "2020-03-05T12:15:05Z",
+    "comments": 15
+  },
+  {
+    "title": "Can onRetry handle async functions?",
+    "description": "I have this situation where I download the file, and want to delete this file (async operation) if the downloaded file is corrupted and needs retry.\r\n\r\n```javascript\r\n    return retry(\r\n      async (_, attempt) => {\r\n        await downloadFileFromInternet();\r\n      },\r\n      {\r\n        onRetry: err => {\r\n         // It happens that downloaded file has an error\r\n         // I want to delete the downloaded corrupted file\r\n         await fs.unlink(pathToCorruptedFile);\r\n        },\r\n        retries: 3\r\n      }\r\n    );\r\n```\r\n\r\nIs it possible to have async-retry retry the next attempt only once the onRetry resolves (if the return value is a Promise)?",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/43",
+    "created_at": "2018-06-28T10:13:57Z",
+    "comments": 5
+  },
+  {
+    "title": "Alternative, in TypeScript",
+    "description": "This project hasn't been updated in years, and so for those having issues with TypeScript...\n\n[Here's an alternative](https://github.com/vitaly-t/retry-async), in TypeScript (strict mode), plus JavaScript, for a complete solution, without libraries.\n",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/110",
+    "created_at": "2024-08-11T13:09:41Z",
+    "comments": 2
+  },
+  {
+    "title": "throw Error inside onRetry",
+    "description": "Throwing an error in `onRetry` seems like a weird behavior to me.\r\n\r\n```javascript\r\nconst retry = require(\"async-retry\");\r\n\r\n(async () => {\r\n  try {\r\n    await retry(\r\n      (bail, attempt) => {\r\n        throw new Error(`inside error at ${attempt}`);\r\n      },\r\n      {\r\n        onRetry: (e, attempt) => {\r\n          console.error(e.message);\r\n          throw new Error(`onRetry error at ${attempt}`);\r\n        },\r\n      },\r\n    );\r\n  } catch (e) {\r\n    console.error(e.message);\r\n  }\r\n})();\r\n```\r\n\r\nResult:\r\n\r\n```\r\ninside error at 1\r\nonRetry error at 1\r\ninside error at 2\r\n/home/xxxxx/playground.js:12\r\n          throw new Error(`onRetry error at ${attempt}`);\r\n          ^\r\n\r\nError: onRetry error at 2\r\n    at Object.onRetry (/home/xxxxx/playground.js:12:17)\r\n    at onError (/home/xxxxx/node_modules/async-retry/lib/index.js:33:17)\r\n    at RetryOperation.runAttempt [as _fn] (/home/xxxxx/node_modules/async-retry/lib/index.js:43:9)\r\n    at Timeout._onTimeout (/home/xxxxx/node_modules/retry/lib/retry_operation.js:81:10)\r\n    at listOnTimeout (node:internal/timers:557:17)\r\n    at processTimers (node:internal/timers:500:7)\r\n```\r\n\r\nI expected that it caught once without retry like:\r\n\r\n```\r\ninside error at 1\r\nonRetry error at 1\r\n(finish)\r\n```\r\n\r\notherwise, with retry like:\r\n\r\n```\r\ninside error at 1\r\ninside error at 2\r\ninside error at 3\r\ninside error at 4\r\ninside error at 5\r\ninside error at 6\r\nonRetry error at 6\r\n(finish)\r\n```\r\n\r\nIs this a bug?",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/79",
+    "created_at": "2021-08-02T10:25:36Z",
+    "comments": 1
+  },
+  {
+    "title": "Jest test fails without retry",
+    "description": "\"dependencies\": {\r\n    \"@azure/event-hubs\": \"^5.6.0\",\r\n    \"@azure/eventgrid\": \"^4.5.0\",\r\n    \"@azure/eventhubs-checkpointstore-blob\": \"^1.0.1\",\r\n    \"@azure/storage-blob\": \"^12.8.0\",\r\n    \"@hapi/joi\": \"^17.1.1\",\r\n    \"@nestjs/common\": \"^8.2.6\",\r\n    \"@nestjs/core\": \"^8.2.6\",\r\n    \"@nestjs/mongoose\": \"^8.0.1\",\r\n    \"@nestjs/platform-express\": \"^8.2.6\",\r\n    \"@nestjs/swagger\": \"^5.2.0\",\r\n    \"@sendgrid/client\": \"^7.4.2\",\r\n    \"async-retry\": \"1.3.1\",\r\n    \"axios\": \"^0.21.1\",\r\n    \"azure-eventgrid\": \"^1.6.0\",\r\n    \"azure-iothub\": \"^1.14.1\",\r\n    \"azure-storage\": \"^2.10.4\",\r\n    \"class-transformer\": \"^0.5.1\",\r\n    \"class-validator\": \"^0.13.2\",\r\n    \"config\": \"^3.3.6\",\r\n    \"flat\": \"^5.0.2\",\r\n    \"fs-extra\": \"^10.0.0\",\r\n    \"hot-shots\": \"^8.3.0\",\r\n    \"mongoose\": \"^5.13.9\",\r\n    \"ms-rest-azure\": \"^3.0.0\",\r\n    \"nanoid\": \"^3.3.1\",\r\n    \"nestjs-pino\": \"^2.5.0\",\r\n    \"pino-noir\": \"^2.2.1\",\r\n    \"qs\": \"^6.10.1\",\r\n    \"raw-body\": \"^2.4.1\",\r\n    \"reflect-metadata\": \"^0.1.13\",\r\n    \"rimraf\": \"^3.0.2\",\r\n    \"rxjs\": \"^7.5.4\",\r\n    \"swagger-ui-express\": \"^4.1.6\"\r\n  },\r\n  \"devDependencies\": {\r\n    \"@nestjs/testing\": \"^8.1.2\",\r\n    \"@types/express\": \"^4.17.13\",\r\n    \"@types/flat\": \"5.0.2\",\r\n    \"@types/fs-extra\": \"^9.0.13\",\r\n    \"@types/hapi__joi\": \"^17.1.4\",\r\n    \"@types/jest\": \"^27.0.2\",\r\n    \"@types/multer\": \"^1.4.2\",\r\n    \"@types/nanoid\": \"^2.1.0\",\r\n    \"@types/node\": \"^14.17.20\",\r\n    \"@types/pino\": \"^6.3.11\",\r\n    \"@types/supertest\": \"^2.0.10\",\r\n    \"@typescript-eslint/eslint-plugin\": \"^3.7.1\",\r\n    \"@typescript-eslint/parser\": \"^3.7.1\",\r\n    \"eslint\": \"^7.8.1\",\r\n    \"eslint-plugin-import\": \"^2.24.2\",\r\n    \"eslint-plugin-prefer-arrow\": \"^1.2.2\",\r\n    \"jest\": \"^27.2.4\",\r\n    \"prettier\": \"^1.15.3\",\r\n    \"supertest\": \"^4.0.2\",\r\n    \"ts-jest\": \"^27.0.5\",\r\n    \"ts-node\": \"9.0.0\",\r\n    \"tsc-watch\": \"^4.2.9\",\r\n    \"tsconfig-paths\": \"3.9.0\",\r\n    \"typescript\": \"^4.0.2\",\r\n    \"wait-on\": \"^5.3.0\"\r\n  },\r\n  \"jest\": {\r\n    \"moduleFileExtensions\": [\r\n      \"js\",\r\n      \"json\",\r\n      \"ts\"\r\n    ],\r\n    \"rootDir\": \"src\",\r\n    \"testRegex\": \".spec.ts$\",\r\n    \"transform\": {\r\n      \"^.+\\\\.(t|j)s$\": \"ts-jest\"\r\n    },\r\n    \"coveragePathIgnorePatterns\": [\r\n      \"/src/core/validators\"\r\n    ],\r\n    \"coverageDirectory\": \"../coverage\",\r\n    \"testEnvironment\": \"node\"\r\n  }\r\n  \r\n  please refer to my above configurations. I am facing an issue while testing the async-retry library as below.\r\n\r\nconst flushPromises = (): unknown => new Promise(resolve => setImmediate(resolve));\r\n\r\nit('should retry method execution till success', async () => {\r\n\t\tconst verifyMethod = jest.fn().mockResolvedValue('verified');\r\n\t\tconst testObject = {\r\n\t\t\ttestKey: 'testValue',\r\n\t\t\tmethodToExecute : jest.fn()\r\n\t\t\t\t.mockRejectedValueOnce(new errors.ThrottlingError('ThrottlingError'))\r\n\t\t\t\t.mockRejectedValueOnce(new errors.ThrottlingError('ThrottlingError'))\r\n\t\t\t\t.mockImplementationOnce(function(input) {\r\n\t\t\t\t\t// eslint-disable-next-line no-invalid-this\r\n\t\t\t\t\treturn verifyMethod(input, this.testKey);\r\n\t\t\t\t})\r\n\t\t};\r\n\t\tconst promise = throttlingErrorHandler.handleOnError(\r\n\t\t\ttestObject.methodToExecute.bind(testObject),\r\n\t\t\t[ 'testInput' ],\r\n\t\t\t{ iothub: 'iothub1', deviceId: 'testdevice', operation: 'verifyMethod' }\r\n\t\t);\r\n\t\tawait flushPromises();\r\n\t\tjest.runAllTimers();\r\n\t\tawait flushPromises();\r\n\t\tjest.runAllTimers();\r\n\t\tawait flushPromises();\r\n\t\tconst result = await promise;\r\n\t\texpect(result).toEqual('verified');\r\n\t\texpect(verifyMethod).toHaveBeenCalledWith('testInput', testObject.testKey);\r\n\t\texpect(testObject.methodToExecute).toHaveBeenCalledTimes(3);\r\n\t\texpect(mockMailService.sendMail).not.toHaveBeenCalled();\r\n\t});\r\n\r\nwhile executing this getting jest timeout exceed error.\r\n\r\nbelow are my code snipped.\r\npublic async handleOnError<T>(\r\n\t\tasyncMethodToExecute: (...args) => Promise<T>,\r\n\t\tmethodArguments: unknown[],\r\n\t\tcontext: { iothub: string; deviceId: string; operation: string },\r\n\t\trunForever = false\r\n\t): Promise<T> {\r\n\r\n\t\tthis.appLoggerService.warn(`Throttling/IotHubQuotaExceededError on ${context.iothub}`, ThrottlingErrorHandler.name);\r\n\r\n\t\tconst throttlingErrorConfiguration = await this.throttlingErrorConfigurationDbService.getConfiguration();\r\n\r\n\t\tif (!throttlingErrorConfiguration) {\r\n\t\t\tthis.appLoggerService.warn('Throttling error configuration not available', ThrottlingErrorHandler.name);\r\n\t\t\treturn null;\r\n\t\t}\r\n\t\tconst isMaxRetriesEnabled = throttlingErrorConfiguration.maxRetriesEnabled;\r\n\t\tconst maxRetries = isMaxRetriesEnabled ? throttlingErrorConfiguration.maxRetries : -1;\r\n\t\t// fixed interval in seconds after which operation is tried again\r\n\t\tconst maxJitterIntervalInSeconds = throttlingErrorConfiguration.maxJitterIntervalInSeconds;\r\n\t\tconst sendMailAfterNumberOfAttempts = throttlingErrorConfiguration.sendMailAfterNumberOfAttempts;\r\n\t\tconst milliseconds = 1000;\r\n\r\n\t\treturn await retry(async (bail, attempt) => {\r\n\t\t\ttry {\r\n\t\t\t\tconst result = await asyncMethodToExecute(...methodArguments); // method context (this) should already be set by caller\r\n\t\t\t\treturn result;\r\n\t\t\t} catch (error) {\r\n\t\t\t\tif (error instanceof errors.ThrottlingError\r\n                    || error instanceof errors.IotHubQuotaExceededError) {\r\n\t\t\t\t\tthis.appLoggerService.warn(`Error: ${error.name} on ${context.iothub}`, ThrottlingErrorHandler.name);\r\n\t\t\t\t\tif (attempt % sendMailAfterNumberOfAttempts === 0 && throttlingErrorConfiguration.sendGrid.isEnabled) {\r\n\t\t\t\t\t\tthis.appLoggerService.error(`Error: ${error.name} on ${context.iothub}, sending mail`, ThrottlingErrorHandler.name);\r\n\t\t\t\t\t\tvoid this.mailService.sendMail(\r\n\t\t\t\t\t\t\tthrottlingErrorConfiguration.sendGrid.mailTo,\r\n\t\t\t\t\t\t\tthrottlingErrorConfiguration.sendGrid.mailCc,\r\n\t\t\t\t\t\t\tthrottlingErrorConfiguration.sendGrid.templateId,\r\n\t\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\t\tiothub: context.iothub,\r\n\t\t\t\t\t\t\t\tdeviceId: context.deviceId,\r\n\t\t\t\t\t\t\t\toperation: context.operation,\r\n\t\t\t\t\t\t\t\terror: error.name\r\n\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t);\r\n\t\t\t\t\t}\r\n\t\t\t\t\tthrow error;\r\n\t\t\t\t} else {\r\n\t\t\t\t\tbail(error);\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t},\r\n\t\t{\r\n\t\t\tretries: maxRetries > 0 && !runForever ? maxRetries - 1 : undefined, // subtract 1 as initial attempt itself is a retry\r\n\t\t\tforever: !isMaxRetriesEnabled || runForever,\r\n\t\t\tmaxTimeout: maxJitterIntervalInSeconds * milliseconds,\r\n\t\t\trandomize: true\r\n\t\t});\r\n\t}\r\n\r\nthe above retry function doesn't retry when an error is thrown.\r\n\r\nkindly review and suggest what is wrong. it was working with jest 25.* version but not working with 27.* version.\r\n\r\nmy node version is 16.11.0 & npm version is 8.0.0",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/90",
+    "created_at": "2022-03-11T10:25:31Z",
+    "comments": 1
+  },
+  {
+    "title": "(0 , async_retry_1.retry) is not a function ",
+    "description": "Hello\r\nI am getting this error while using `retry`\r\n\r\n` (0 , async_retry_1.retry) is not a function`\r\n\r\nHere is my code:\r\n\r\n```\r\n await retry(\r\n        async () => {\r\n          await this.myMethod(arguments)\r\n        },\r\n        { retries: 2 },\r\n      );\r\n```\r\n\r\nCould you please help?\r\n",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/103",
+    "created_at": "2023-03-09T11:17:27Z",
+    "comments": 3
+  },
+  {
+    "title": "Option has no retries",
+    "description": "I haven't followed the details of whether the type of @types/retry has changed, but I got an error that option has no \"retries\", and I couldn't use this package.\r\n\r\n```js\r\nconst retry = require('async-retry');\r\nconst fetch = require('node-fetch');\r\n\r\nawait retry(\r\n  async (bail) => {\r\n    // if anything throws, we retry\r\n    const res = await fetch('https://google.com');\r\n\r\n    if (403 === res.status) {\r\n      // don't retry upon 403\r\n      bail(new Error('Unauthorized'));\r\n      return;\r\n    }\r\n\r\n    const data = await res.text();\r\n    return data.substr(0, 500);\r\n  },\r\n  {\r\n   // Not Found\r\n    retries: 5,\r\n  }\r\n);\r\n```",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/97",
+    "created_at": "2022-09-23T16:49:30Z",
+    "comments": 5
+  },
+  {
+    "title": "Set dynamic retry timeout in onRetry",
+    "description": "I am currently trying to retry requests made to Notion. If I am rate limited, their API returns the number of seconds I should wait before retrying. I would like to use this value in `onRetry` (or anywhere else, though here it makes sense) to dynamically alter how long to wait before the next retry. If I am not mistaken, this kind of behaviour is not supported by `async-retry` at the moment.",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/101",
+    "created_at": "2023-02-19T18:42:34Z",
+    "comments": 1
+  },
+  {
+    "title": "randomize default is true not false.",
+    "description": "\r\n![image](https://github.com/vercel/async-retry/assets/17898858/32361fd2-420e-4ac6-ad33-46eead58ca4f)\r\n\r\n![image](https://github.com/vercel/async-retry/assets/17898858/493ee123-b161-4a80-8749-efcd5394abc7)\r\n\r\n\r\n\r\n",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/109",
+    "created_at": "2024-06-25T03:34:52Z",
+    "comments": 0
+  },
+  {
+    "title": "Add option to decide if retry should be attempted?",
+    "description": "I know there's feature to bail out conditionally, but I think it would be useful to have a function that is called as soon as the operation fails, and the return value of that function should decide whether or not the next retry should happen.\r\n\r\nSo `if (!op.retry(err)) {` would just become something like `if (!options.shouldRetry(err) || !op.retry(err)) {`.\r\n\r\nCurrent alternative to this would be to have a try/catch in the `retrier` function, decide in catch, throw if need to retry, and swallow and `bail` if needed. But this is a lot of boilerplate and can not be extracted into a separate function.\r\n\r\nWhile having a function in option would be much easier.\r\n\r\nDid it make sense?",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/51",
+    "created_at": "2019-01-23T12:16:00Z",
+    "comments": 3
+  },
+  {
+    "title": "The documentation for onRetry is wrong",
+    "description": "The documentation currently says this:\r\n\r\n> `onRetry`: an optional Function that is invoked after a new retry is performed. It's passed the Error that triggered it as a parameter.\r\n\r\nBut it should say this:\r\n\r\n> `onRetry`: an optional Function that is invoked **_before_** a new retry is performed. It's passed the Error that triggered it as a parameter.\r\n\r\nIt's a small but significant difference.\r\n\r\nI thought `onRetry` was useless because the docs say it runs **_after_** the retry. Then I tested and found it actually runs **_before_** the retry, which is much more useful. The docs should reflect that.",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/92",
+    "created_at": "2022-05-25T23:18:50Z",
+    "comments": 1
+  },
+  {
+    "title": "Types for Typescript",
+    "description": "Are you interested in types? We made some for using your library and I can share them. I can make a pull request, otherwise I can try and toss it up on DefinitelyTyped. \r\n\r\nThanks!",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/36",
+    "created_at": "2017-07-11T13:20:10Z",
+    "comments": 6
+  },
+  {
+    "title": "Why isn\u2019t it using vercel retry as its base?",
+    "description": "When parsing the options I wandered why they differ from the ones seen in vercel retry. \r\n\r\nThen I checked that this library uses retry instead of vercel retry. Any reason why?",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/87",
+    "created_at": "2021-10-24T06:56:10Z",
+    "comments": 0
+  },
+  {
+    "title": "Package size increase after async-retry",
+    "description": "adding async-retry into our package dependencies increases bundle size by 10kb.Any suggestions to reduce this size? \r\n\r\nthe way i am importing is  import retry from 'async-retry'; the version of the package i am using is  \"async-retry\": \"1.3.1\". Please let me know.",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/78",
+    "created_at": "2021-07-02T00:11:21Z",
+    "comments": 1
+  },
+  {
+    "title": "How to retry if response data is empty",
+    "description": "Hi\r\n\r\ni want to retry the http request if the response data i am receiving is empty. The backend service takes some time to process the data, it return me an empty array if it has not processed yet. The array will hold data if it is successfully processed. \r\n\r\n```\r\n public async processClassification(instanceId: any, requestId: any): Promise<any> {\r\n\r\n        const url = this.config.backendUrl + \"/check/classification\";\r\n\r\n        const options = {\r\n            uri: url,\r\n            headers: {\r\n                \"X-IDCHECK-SESSION_ID\": instanceId,\r\n            },\r\n            body: {},\r\n            json: true,\r\n            resolveWithFullResponse: true,\r\n        };\r\n\r\n        const data = await retry(async (bail) => {\r\n\r\n            const res = await request.get(options);\r\n\r\n            if (res.body.data.classification.length > 0) {\r\n              bail(\"got data\");\r\n              return;\r\n            }\r\n\r\n            return res;\r\n          }, {\r\n            retries: 5,\r\n            });\r\n\r\n        return data;\r\n    }\r\n```\r\n\r\nAlso to note i using the following library https://github.com/request/request-promise-native to make the actual request\r\n",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/52",
+    "created_at": "2019-01-28T15:55:31Z",
+    "comments": 1
+  },
+  {
+    "title": "Feature: set a timeout for the entire retry operation",
+    "description": "I find myself doing this a lot when using async-retry:\r\n\r\n```ts\r\nawait Promise.race(\r\n  retry(/* ... */),\r\n  new Promise((_, reject) => {\r\n    setTimeout(() => {\r\n      reject(new Error('FAILED to complete async retry in less than 1 minute'))\r\n    }, 60000)\r\n  }),\r\n)\r\n```\r\n\r\nIt would be awesome if there were a clean way to provide an option (`retryTimeout`?) that allowed you to say (*\"time out after the retry went for this long, regardless of the attempt number\"*).",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/73",
+    "created_at": "2020-08-03T21:51:36Z",
+    "comments": 0
+  },
+  {
+    "title": "Throw previous error if there's a timeout",
+    "description": "Right now, code like this will actually throw the error 'RetryOperation timeout occurred' which [originates in node-retry](https://github.com/tim-kos/node-retry/blob/master/lib/retry_operation.js#L49). It should throw the error I made (`\"HI\" + Math.random()`), but doesn't because of a timeout error.\r\n\r\n```\r\nimport * as retry from 'async-retry'\r\n\r\nasync function throwsErrors(){\r\n  await delay(1000)\r\n  throw new Error(\"HI\" + Math.random())\r\n}\r\n\r\nretry(\r\n  async (bail, attempt) => {\r\n      await throwsErrors()\r\n  } , {\r\n    maxRetryTime: 100,\r\n    minTimeout: 2,\r\n    randomize: true,\r\n    retries: 100,\r\n    onRetry: console.log\r\n  }\r\n).then(console.log)\r\n\r\nasync function delay(milliseconds: number) {\r\n  return new Promise(resolve => setTimeout(resolve, milliseconds))\r\n}\r\n```\r\n\r\nI made [an issue in node-retry](https://github.com/tim-kos/node-retry/issues/70) that describes why this happens in detail, but the gist is that **if you call `retryOperation.retry(err)` and there's a timeout error, node-retry drops `err`**. I'm not sure if this is something that node-retry needs to support or if it's something that you can/should handle here. \r\n\r\n",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/57",
+    "created_at": "2019-11-04T21:35:45Z",
+    "comments": 2
+  },
+  {
+    "title": "Add ability to override the delay for a particular failed invocation",
+    "description": "It would be nice to allow the called function to override the amount of time to delay between invocations, for the next invocation only. The rationale for this request is that some REST APIs will return a `retry-after` header for some calls indicating how long one should wait before retrying the request. There is currently no way to communicate that directive to this module.",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/68",
+    "created_at": "2020-02-17T16:47:48Z",
+    "comments": 0
+  },
+  {
+    "title": "TypeError error e is not a function and TypeError error Function expected",
+    "description": "Hi @rauchg and @leo,\r\n\r\nI recently added `async-retry` to the project I'm working on because I was getting a lot of  `ChunkLoadError Loading chunk 6 failed` in Sentry. This is how I currently use it:\r\n\r\n```js\r\nimport loadable from '@loadable/component'\r\nimport retry from 'async-retry'\r\n\r\nconst Dashboard = loadable(() =>\r\n  retry(() => import(/* webpackChunkName: \"Dashboard\" */ 'containers/pages/Dashboard'), {\r\n    factor: 1,\r\n    maxTimeout: 10000,\r\n  })\r\n)\r\n```\r\n\r\n I'm now getting a new error on Sentry from `async-retry` package. I'm not sure to understand it: \r\n\r\n```\r\nfunction runAttempt(num) {\r\n  32       var val;\r\n  33\r\n  34       try {\r\n  35         val = fn(bail, num);\r\n  36       } catch (err) {\r\n  37         onError(err, num);\r\n  38         return;\r\n  39       }\r\n  40\r\n  41       Promise.resolve(val)\r\n  42         .then(resolve)\r\n  43         .catch(function catchIt(err) {\r\n  44           onError(err, num);\r\n  45         });\r\n  46     }\r\n```\r\n\r\nAccording to Sentry the problem is on line **35** of this function. I get 3 different error messages:\r\n\r\n* `TypeError error e is not a function`\r\n* `TypeError error Function expected`\r\n* `TypeError e is not a function. (In 'e(c,t)', 'e' is an instance of Promise)`\r\n\r\nAm I doing something wrong or is it a bug?\r\nI would be happy to help either way.",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/58",
+    "created_at": "2019-11-13T16:01:52Z",
+    "comments": 0
+  },
+  {
+    "title": "Bail automatically upon `TypeError`",
+    "description": "And make it optional.\n",
+    "labels": [],
+    "url": "https://github.com/vercel/async-retry/issues/1",
+    "created_at": "2016-06-14T17:54:51Z",
+    "comments": 0
+  }
+]
