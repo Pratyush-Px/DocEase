@@ -1,5 +1,21 @@
 [
   {
+    "title": "After upgrade to 3.17.0 the null datetime values are not rendered and a ValueError is raised",
+    "description": "\n### Discussed in https://github.com/encode/django-rest-framework/discussions/9925\n\n<div type='discussions-op-text'>\n\n<sup>Originally posted by **kazei92** March 19, 2026</sup>\nThe problem is with this line: \r\n`datetime.datetime.fromisoformat(field_value) if format_ == ISO_8601`\r\n\r\n[Line Link](https://github.com/encode/django-rest-framework/blob/6f03b79c057c470524b12e9ac46bc2bb384570e0/rest_framework/renderers.py#L357)\r\n\r\nin rest_framework\\renderers.py.\r\n\r\nIf the field_value is an empty string '', a ValueError is raised.\r\nBefore 3.17.0 the empty date strings were supported.\r\n\r\nI don't know if this is an issue or the null values are not handled properly.</div>",
+    "labels": [],
+    "url": "https://github.com/encode/django-rest-framework/issues/9927",
+    "created_at": "2026-03-19T14:13:39Z",
+    "comments": 1
+  },
+  {
+    "title": "Browsable API crashes on extra action in viewset.",
+    "description": "## Checklist\r\n\r\n- [ X ] I have verified that that issue exists against the `master` branch of Django REST framework.\r\n- [ X ] I have searched for similar issues in both open and closed tickets and cannot find a duplicate.\r\n- [ X ] This is not a usage question. (Those should be directed to the [discussion group](https://groups.google.com/forum/#!forum/django-rest-framework) instead.)\r\n- [ X ] This cannot be dealt with as a third party library. (We prefer new functionality to be [in the form of third party libraries](https://www.django-rest-framework.org/community/third-party-packages/#about-third-party-packages) where possible.)\r\n- [ X ] I have reduced the issue to the simplest possible case.\r\n- [ ] I have included a failing test as a pull request. (If you are unable to do so we can still accept the issue.)\r\n\r\n\r\n## Steps to reproduce\r\nPlease see my example project https://github.com/sanchaz/django-drf-demo\r\nclone\r\n./manage migrate\r\n./manage test\r\n./manage runserver\r\nGo to http://127.0.0.1:8000/admin\r\nLogin with\r\nuser: demo\r\npassword: demo\r\nGo to http://127.0.0.1:8000/api/demo/thisone/demo2/\r\nGo to http://127.0.0.1:8000/api/demo/thisone/demo/\r\n## Expected behavior\r\nhttp://127.0.0.1:8000/api/demo/thisone/demo/ should instead show the data.\r\n\r\nThe tests written call endpoint demo/ and demo2/ without any issue.\r\ndemo2/ is the same as demo/ but the serializer is passed an array instead of an object and many=True\r\n## Actual behavior\r\nCrashes because it tries to check for object permission on the serializer object used in the Response.\r\n\r\nThis seems like a bug in the browsable api.\r\nI don't understand why it calls check_object_permissions on the serializer obj used in the response.",
+    "labels": [],
+    "url": "https://github.com/encode/django-rest-framework/issues/6855",
+    "created_at": "2019-08-04T02:06:19Z",
+    "comments": 4
+  },
+  {
     "title": "Partial updates and object-level validations",
     "description": "The current design of rest framework doesn't seem to support object-level validations on partial updates. \n\nQuick example:\n\n``` python\nfrom rest_framework import serializers\n\nclass ItemInListSerializer(serializers.Serializer):\n    options=serializers.ListField()\n    item=serializers.CharField()\n\n    def validate(self, attrs):\n        options = attrs.get('options')\n        item = attrs.get('item')\n\n       if item not in options:\n            raise serializers.ValidationError('Item is not a valid option!')\n\n    def update(self, instance, validated_data):\n        instance.attributes = validated_data\n        return instance\n\n    def create(self, validated_data):\n        # create some object\n```\n\nThis is just a toy example, but the issue should be pretty clear: if you're creating an object with the serializer, then `attrs` contains both `options` and `item`, and the validations pass and the object is created. If you attempt a partial update to set `item` (for example), the `validate` method will always run before `update`, and will always fail, because `options` does not exist.\n\nIs there any standard solution to this scenario? I could certainly write validations before anything gets to the serializer, or push them down into models, but it seems like (and correct me if I'm wrong) DRF is attempting to be that validation layer and, in theory, these validations should and could live on the serializer.\n\nAlso just to note, I'm not the only person with this problem, I found this on SO: http://stackoverflow.com/questions/28646454/django-rest-framework-partial-update-and-validation\n\nAny help would be appreciated! Thanks!\n",
     "labels": [
@@ -136,14 +152,6 @@
     "url": "https://github.com/encode/django-rest-framework/issues/6877",
     "created_at": "2019-08-19T20:37:06Z",
     "comments": 2
-  },
-  {
-    "title": "Browsable API crashes on extra action in viewset.",
-    "description": "## Checklist\r\n\r\n- [ X ] I have verified that that issue exists against the `master` branch of Django REST framework.\r\n- [ X ] I have searched for similar issues in both open and closed tickets and cannot find a duplicate.\r\n- [ X ] This is not a usage question. (Those should be directed to the [discussion group](https://groups.google.com/forum/#!forum/django-rest-framework) instead.)\r\n- [ X ] This cannot be dealt with as a third party library. (We prefer new functionality to be [in the form of third party libraries](https://www.django-rest-framework.org/community/third-party-packages/#about-third-party-packages) where possible.)\r\n- [ X ] I have reduced the issue to the simplest possible case.\r\n- [ ] I have included a failing test as a pull request. (If you are unable to do so we can still accept the issue.)\r\n\r\n\r\n## Steps to reproduce\r\nPlease see my example project https://github.com/sanchaz/django-drf-demo\r\nclone\r\n./manage migrate\r\n./manage test\r\n./manage runserver\r\nGo to http://127.0.0.1:8000/admin\r\nLogin with\r\nuser: demo\r\npassword: demo\r\nGo to http://127.0.0.1:8000/api/demo/thisone/demo2/\r\nGo to http://127.0.0.1:8000/api/demo/thisone/demo/\r\n## Expected behavior\r\nhttp://127.0.0.1:8000/api/demo/thisone/demo/ should instead show the data.\r\n\r\nThe tests written call endpoint demo/ and demo2/ without any issue.\r\ndemo2/ is the same as demo/ but the serializer is passed an array instead of an object and many=True\r\n## Actual behavior\r\nCrashes because it tries to check for object permission on the serializer object used in the Response.\r\n\r\nThis seems like a bug in the browsable api.\r\nI don't understand why it calls check_object_permissions on the serializer obj used in the response.",
-    "labels": [],
-    "url": "https://github.com/encode/django-rest-framework/issues/6855",
-    "created_at": "2019-08-04T02:06:19Z",
-    "comments": 3
   },
   {
     "title": "List filters in auto-generated documentation",

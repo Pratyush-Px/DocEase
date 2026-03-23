@@ -124,6 +124,8 @@ async def match_issues(
             title=match["title"],
             url=match["url"],
             score=match["score"],
+            readiness_score=match["readiness_score"],
+            readiness_reason=match["readiness_reason"],
             matched_skills=match["matched_skills"],
             labels=match["labels"]
         ) for match in top_matches

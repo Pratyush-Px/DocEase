@@ -3,6 +3,8 @@ from datetime import datetime
 import numpy as np
 import re
 
+from app.services.readiness_service import calculate_readiness_score
+
 # Weights (rebalanced after review)
 WEIGHT_SEMANTIC = 0.50
 WEIGHT_SKILL = 0.20
@@ -131,10 +133,19 @@ def rank_issues(resume_skills: List[str], candidate_issues: List[Dict[str, Any]]
             if skill.lower() in issue_text.lower()
         ]
         
+        # Compute readiness score (independent of ranking)
+        readiness_result = calculate_readiness_score(
+            issue=issue,
+            skill_match_score=skill_score,
+            recency_score=recency_score,
+        )
+
         ranked_issues.append({
             "title": issue.get("title", ""),
             "url": issue.get("url", ""),
             "score": round(final_score, 2),
+            "readiness_score": readiness_result["readiness_score"],
+            "readiness_reason": readiness_result["readiness_reason"],
             "matched_skills": matched_skills,
             "labels": issue.get("labels", [])
         })
