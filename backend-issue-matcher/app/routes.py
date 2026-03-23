@@ -22,8 +22,11 @@ async def match_issues(
     start_time = time.time()
     
     # 1. Validate inputs
-    if not repo_url.startswith("https://github.com/"):
-        raise HTTPException(status_code=400, detail="Invalid GitHub repository URL.")
+    if not (
+        repo_url.startswith("https://github.com/")
+        or repo_url.startswith("topic:")
+    ):
+        raise HTTPException(status_code=400, detail="Invalid GitHub input.")
         
     if not resume_file.filename:
         raise HTTPException(status_code=400, detail="Missing resume file.")
