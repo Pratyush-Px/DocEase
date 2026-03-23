@@ -3,6 +3,31 @@ from typing import List, Dict, Any
 from app.config import settings, logger
 from fastapi import HTTPException
 
+
+def parse_github_input(input_str: str):
+    input_str = input_str.strip()
+
+    # Topic mode
+    if input_str.startswith("topic:"):
+        return {"type": "topic", "value": input_str.replace("topic:", "").strip()}
+
+    # GitHub URL
+    if input_str.startswith("https://github.com/"):
+        path = input_str.replace("https://github.com/", "").strip("/")
+        parts = path.split("/")
+
+        # Organization
+        if len(parts) == 1:
+            return {"type": "org", "owner": parts[0]}
+
+        # Repository
+        elif len(parts) >= 2:
+            return {"type": "repo", "owner": parts[0], "repo": parts[1]}
+
+    raise HTTPException(status_code=400, detail="Invalid GitHub input format")
+
+
+
 async def fetch_github_issues(repo_url: str) -> List[Dict[str, Any]]:
     """
     Fetches up to 100 open issues with 'good first issue' label from the specified repo.
