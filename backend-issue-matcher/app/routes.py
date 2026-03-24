@@ -19,6 +19,8 @@ from app.services.matcher_service import rank_issues
 from app.config import logger
 import numpy as np
 import time
+from app.services.contribution_service import get_contributing_text
+from app.services.contribution_service import extract_setup_steps
 
 router = APIRouter()
 
@@ -208,3 +210,29 @@ async def create_action_plan(request: ActionPlanRequest):
     )
 
     return ActionPlanResponse(markdown_plan=plan)
+
+@router.post("/contributing")
+async def get_contributing(repo_url: str = Form(...)):
+    """
+    Fetch contributing guidelines for a repository
+    """
+    try:
+        text = await get_contributing_text(repo_url)
+
+        if not text:
+            return {
+                "repo": repo_url,
+                "message": "No contributing guidelines found.",
+                "content": ""
+            }
+    
+        setup_steps = extract_setup_steps(text)
+
+        return {
+            "repo": repo_url,
+            "setup_steps": setup_steps,
+            "content": text[:2000]
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
