@@ -130,7 +130,8 @@ async def match_issues(
             readiness_score=match["readiness_score"],
             readiness_reason=match["readiness_reason"],
             matched_skills=match["matched_skills"],
-            labels=match["labels"]
+            labels=match["labels"],
+            skill_gap=match.get("skill_gap", "")
         ) for match in top_matches
     ]
 

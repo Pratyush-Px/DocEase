@@ -2,7 +2,10 @@ from typing import List, Dict, Any
 from datetime import datetime
 import numpy as np
 import re
+import json
 
+from app.config import logger
+from app.services.gemini_client import get_model
 from app.services.readiness_service import calculate_readiness_score
 
 # Weights (rebalanced after review)
@@ -22,6 +25,32 @@ LABEL_WEIGHTS = {
     "low-hanging fruit": 0.85,
     "documentation": 0.7,
 }
+
+def generate_skill_gaps_batch(resume_skills: list[str], top_issues: list[dict]) -> list[str]:
+    try:
+        model = get_model()
+        issues_block = "\n".join([f"{i+1}. {issue['title']}: {(issue.get('description') or '')[:200]}" for i, issue in enumerate(top_issues)])
+        prompt = (
+            f"A developer has these skills: {', '.join(resume_skills[:15])}\n\n"
+            f"Here are 5 GitHub issues they may contribute to:\n"
+            f"{issues_block}\n\n"
+            f"For each issue write exactly one sentence: what specific skill or knowledge gap should they prepare for, or what makes them well-suited if no gap exists. Be concrete, not generic.\n"
+            f"Each response must be under 25 words.\n"
+            f"Return ONLY a valid JSON array of exactly 5 strings in the same order as the issues. No explanation, no markdown.\n"
+            f"Example: '[\"gap or fit for issue 1\", \"gap or fit for issue 2\", ...]'"
+        )
+        response = model.generate_content(prompt, generation_config={"temperature": 0.2}, request_options={"timeout": 10})
+        try:
+            result = json.loads(response.text)
+        except json.JSONDecodeError:
+            match = re.search(r'\[.*\]', response.text, re.DOTALL)
+            result = json.loads(match.group()) if match else []
+        if not isinstance(result, list):
+            result = []
+        return (result + [""] * 5)[:5]
+    except Exception as e:
+        logger.warning(f"Gemini skill gap batch failed: {e}")
+        return [""] * 5
 
 def calculate_semantic_score(distance: float) -> float:
     """
@@ -153,4 +182,13 @@ def rank_issues(resume_skills: List[str], candidate_issues: List[Dict[str, Any]]
     # Sort descending by score
     ranked_issues.sort(key=lambda x: x["score"], reverse=True)
     
-    return ranked_issues[:5]
+    top5 = ranked_issues[:5]
+    try:
+        gaps = generate_skill_gaps_batch(list(resume_skills_set), top5)
+    except Exception:
+        gaps = [""] * 5
+        
+    for i, issue in enumerate(top5):
+        issue["skill_gap"] = gaps[i]
+        
+    return top5

@@ -9,6 +9,7 @@ class MatchInfo(BaseModel):
     readiness_reason: str
     matched_skills: List[str]
     labels: List[str]
+    skill_gap: str = ""
 
 class MatchResponse(BaseModel):
     user_skills: List[str]
