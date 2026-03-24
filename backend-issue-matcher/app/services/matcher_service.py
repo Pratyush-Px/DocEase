@@ -8,12 +8,39 @@ from app.config import logger
 from app.services.gemini_client import get_model
 from app.services.readiness_service import calculate_readiness_score
 
-# Weights (rebalanced after review)
-WEIGHT_SEMANTIC = 0.50
-WEIGHT_SKILL = 0.20
-WEIGHT_LABEL = 0.15
-WEIGHT_ACTIVITY = 0.10
-WEIGHT_RECENCY = 0.05
+
+def get_persona_weights(experience_level: str):
+    """Dynamically adjusts ranking weights based on user seniority."""
+    level = experience_level.lower()
+
+    if level == "senior":
+        # Seniors don't need beginner labels. Prioritize pure semantic match and recency.
+        return {
+            "semantic": 0.60,
+            "skill": 0.30,
+            "label": 0.00,
+            "activity": 0.05,
+            "recency": 0.05,
+        }
+    elif level == "mid":
+        # Mid-level wants a balance, slightly favoring skill overlap.
+        return {
+            "semantic": 0.55,
+            "skill": 0.25,
+            "label": 0.05,
+            "activity": 0.10,
+            "recency": 0.05,
+        }
+    else:
+        # Junior (default): Needs high clarity, good labels, and moderate activity (existing discussion helps).
+        return {
+            "semantic": 0.45,
+            "skill": 0.20,
+            "label": 0.20,
+            "activity": 0.10,
+            "recency": 0.05,
+        }
+
 
 # Graduated Label Weights
 LABEL_WEIGHTS = {
@@ -152,45 +179,34 @@ def rank_issues(
     candidate_issues: List[Dict[str, Any]],
     distances: List[float],
     repo_languages: List[str] = None,
+    experience_level: str = "junior",  # NEW ARGUMENT
 ) -> List[Dict[str, Any]]:
-    """
-    Takes candidate issues from FAISS and applies multi-signal ranking.
-    Injects implicit repository languages to improve skill overlap scores.
-    Returns the top 5 match objects.
-    """
+
     ranked_issues = []
     resume_skills_set = set(resume_skills)
+    weights = get_persona_weights(experience_level)  # FETCH DYNAMIC WEIGHTS
 
-    # Safely handle the default argument
     if repo_languages is None:
         repo_languages = []
-
-    # Convert the list of languages into a single space-separated string
     implicit_context = " ".join(repo_languages)
 
     for i, issue in enumerate(candidate_issues):
         distance = distances[i] if i < len(distances) else 1.0
-
-        # INJECT THE CONTEXT HERE
-        # We append the repo's primary languages to the end of the issue text
         issue_text = f"{issue.get('title', '')} {issue.get('description', '')} {' '.join(issue.get('labels', []))} {implicit_context}"
 
-        # Calculate individual scores
         semantic_score = calculate_semantic_score(distance)
         skill_score = calculate_skill_overlap_score(resume_skills_set, issue_text)
-
-        # --- RESTORED MISSING LINES ---
         label_score = calculate_label_priority_score(issue.get("labels", []))
         activity_score = calculate_activity_score(issue.get("comments", 0))
         recency_score = calculate_recency_score(issue.get("created_at", ""))
 
-        # Final weighted score
+        # APPLY DYNAMIC WEIGHTS HERE
         final_score = (
-            WEIGHT_SEMANTIC * semantic_score
-            + WEIGHT_SKILL * skill_score
-            + WEIGHT_LABEL * label_score
-            + WEIGHT_ACTIVITY * activity_score
-            + WEIGHT_RECENCY * recency_score
+            weights["semantic"] * semantic_score
+            + weights["skill"] * skill_score
+            + weights["label"] * label_score
+            + weights["activity"] * activity_score
+            + weights["recency"] * recency_score
         )
 
         # Prepare matched skills for the output — mirror scoring logic exactly

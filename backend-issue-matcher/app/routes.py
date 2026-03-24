@@ -1,3 +1,5 @@
+from app.models.schemas import ActionPlanRequest, ActionPlanResponse
+from app.services.action_plan_service import generate_action_plan_llm
 from app.services.github_service import fetch_repo_languages, parse_github_input
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException
 from typing import List, Dict, Any
@@ -18,13 +20,15 @@ from app.config import logger
 import numpy as np
 import time
 
-BGE_PREFIX = "Represent this sentence for searching relevant passages: "
-
 router = APIRouter()
 
 
 @router.post("/match-issues", response_model=MatchResponse)
-async def match_issues(repo_url: str = Form(...), resume_file: UploadFile = File(...)):
+async def match_issues(
+    repo_url: str = Form(...),
+    resume_file: UploadFile = File(...),
+    experience_level: str = Form("junior"),  # NEW: Defaults to junior
+):
     start_time = time.time()
 
     # 1. Validate inputs
@@ -159,7 +163,11 @@ async def match_issues(repo_url: str = Form(...), resume_file: UploadFile = File
     # 6. Rank Issues using multi-signal scoring
     # We now pass repo_languages into rank_issues
     top_matches = rank_issues(
-        user_skills, candidate_metadata, candidate_distances, repo_languages
+        resume_skills=user_skills,
+        candidate_issues=candidate_metadata,
+        distances=candidate_distances,
+        repo_languages=repo_languages,
+        experience_level=experience_level,  # <-- ADD THIS LINE HERE!
     )
 
     top_match_infos = [
@@ -185,3 +193,18 @@ async def match_issues(repo_url: str = Form(...), resume_file: UploadFile = File
         issues_scanned=len(metadata),
         top_matches=top_match_infos,
     )
+
+
+@router.post("/generate-action-plan", response_model=ActionPlanResponse)
+async def create_action_plan(request: ActionPlanRequest):
+    """
+    Generates a step-by-step markdown guide on how to tackle a specific issue.
+    """
+    plan = generate_action_plan_llm(
+        title=request.issue_title,
+        description=request.issue_description,
+        repo=request.repo_url,
+        skills=request.user_skills,
+    )
+
+    return ActionPlanResponse(markdown_plan=plan)
