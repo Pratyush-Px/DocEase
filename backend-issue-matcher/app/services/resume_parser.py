@@ -315,6 +315,20 @@ def parse_resume(file_content: bytes) -> Dict[str, Any]:
     llm_norm = {s.lower().strip(): s for s in llm_skills_filtered}
     merged_norm = {**llm_norm, **keyword_norm}  # keyword casing wins on collision
     combined = [format_skill(v) for v in merged_norm.values()][:40]
+
+    # Fix 5: Filter out certification strings that inflate denominator without matching
+    CERT_SIGNALS = [
+        "udemy", "nptel", "coursera", "oracle", "red hat",
+        "linkedin learning", "certification", "certified"
+    ]
+
+    combined = [
+        s for s in combined
+        if not any(c in s.lower() for c in CERT_SIGNALS)
+        and "(" not in s
+        and len(s.split()) <= 4
+    ]
+
     logger.info(f"[Resume Parser] Final merged skill list: {len(combined)} skills")
 
     return {"skills": combined, "text": cleaned_text}

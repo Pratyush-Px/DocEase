@@ -28,6 +28,34 @@ def parse_github_input(input_str: str):
     raise HTTPException(status_code=400, detail="Invalid GitHub input format")
 
 
+async def fetch_repo_languages(repo_path: str) -> List[str]:
+    """
+    Fetches the primary languages used in a GitHub repository.
+    Returns a list of language names (e.g., ['JavaScript', 'HTML', 'CSS']).
+    """
+    headers = {
+        "Accept": "application/vnd.github.v3+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+
+    if settings.github_token:
+        headers["Authorization"] = f"Bearer {settings.github_token}"
+
+    api_url = f"https://api.github.com/repos/{repo_path}/languages"
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(api_url, headers=headers)
+            if response.status_code == 200:
+                # GitHub returns a dict of { "Language": bytes_of_code }
+                # We just want the language names
+                return list(response.json().keys())
+        except Exception as e:
+            logger.warning(f"Failed to fetch repo languages for {repo_path}: {e}")
+
+    return []
+
+
 async def safe_get(client, url, headers, label):
     try:
         resp = await client.get(url, headers=headers)
@@ -63,10 +91,12 @@ async def fetch_org_issues(owner: str) -> List[Dict[str, Any]]:
             except Exception:
                 return []
 
-        results = await asyncio.gather(*[
-            safe_fetch(f"https://github.com/{owner}/{repo.get('name')}")
-            for repo in repos
-        ])
+        results = await asyncio.gather(
+            *[
+                safe_fetch(f"https://github.com/{owner}/{repo.get('name')}")
+                for repo in repos
+            ]
+        )
 
         all_issues = []
         for issues in results:

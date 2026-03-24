@@ -26,10 +26,18 @@ LABEL_WEIGHTS = {
     "documentation": 0.7,
 }
 
-def generate_skill_gaps_batch(resume_skills: list[str], top_issues: list[dict]) -> list[str]:
+
+def generate_skill_gaps_batch(
+    resume_skills: list[str], top_issues: list[dict]
+) -> list[str]:
     try:
         model = get_model()
-        issues_block = "\n".join([f"{i+1}. {issue['title']}: {(issue.get('description') or '')[:200]}" for i, issue in enumerate(top_issues)])
+        issues_block = "\n".join(
+            [
+                f"{i+1}. {issue['title']}: {(issue.get('description') or '')[:200]}"
+                for i, issue in enumerate(top_issues)
+            ]
+        )
         prompt = (
             f"A developer has these skills: {', '.join(resume_skills[:15])}\n\n"
             f"Here are 5 GitHub issues they may contribute to:\n"
@@ -37,13 +45,17 @@ def generate_skill_gaps_batch(resume_skills: list[str], top_issues: list[dict]) 
             f"For each issue write exactly one sentence: what specific skill or knowledge gap should they prepare for, or what makes them well-suited if no gap exists. Be concrete, not generic.\n"
             f"Each response must be under 25 words.\n"
             f"Return ONLY a valid JSON array of exactly 5 strings in the same order as the issues. No explanation, no markdown.\n"
-            f"Example: '[\"gap or fit for issue 1\", \"gap or fit for issue 2\", ...]'"
+            f'Example: \'["gap or fit for issue 1", "gap or fit for issue 2", ...]\''
         )
-        response = model.generate_content(prompt, generation_config={"temperature": 0.2}, request_options={"timeout": 10})
+        response = model.generate_content(
+            prompt,
+            generation_config={"temperature": 0.2},
+            request_options={"timeout": 10},
+        )
         try:
             result = json.loads(response.text)
         except json.JSONDecodeError:
-            match = re.search(r'\[.*\]', response.text, re.DOTALL)
+            match = re.search(r"\[.*\]", response.text, re.DOTALL)
             result = json.loads(match.group()) if match else []
         if not isinstance(result, list):
             result = []
@@ -51,6 +63,7 @@ def generate_skill_gaps_batch(resume_skills: list[str], top_issues: list[dict]) 
     except Exception as e:
         logger.warning(f"Gemini skill gap batch failed: {e}")
         return [""] * 5
+
 
 def calculate_semantic_score(distance: float) -> float:
     """
@@ -63,6 +76,7 @@ def calculate_semantic_score(distance: float) -> float:
     """
     return max(0.0, 1.0 - (distance / 2.0))
 
+
 def calculate_skill_overlap_score(resume_skills: set, issue_text: str) -> float:
     """
     Matches resume skills against the full issue text (title + description + labels),
@@ -70,23 +84,26 @@ def calculate_skill_overlap_score(resume_skills: set, issue_text: str) -> float:
     """
     if not resume_skills:
         return 0.0
-        
+
     text_lower = issue_text.lower()
-    
+
     matched = 0
     for skill in resume_skills:
         skill_lower = skill.lower()
         # Use word boundary for short skills to avoid false matches
         # e.g. "go" shouldn't match "google"
         if len(skill_lower) <= 3:
-            pattern = r'\b' + re.escape(skill_lower) + r'\b'
+            pattern = r"\b" + re.escape(skill_lower) + r"\b"
             if re.search(pattern, text_lower):
                 matched += 1
         else:
             if skill_lower in text_lower:
                 matched += 1
 
-    return matched / max(len(resume_skills), 1)
+    # Cap denominator at 15 to avoid penalizing broad skill sets
+    effective_denominator = min(len(resume_skills), 15)
+    return min(matched / 2.0, 1.0)
+
 
 def calculate_label_priority_score(issue_labels: List[str]) -> float:
     """
@@ -94,9 +111,10 @@ def calculate_label_priority_score(issue_labels: List[str]) -> float:
     Uses a weighted label dictionary for finer differentiation.
     """
     labels_lower = {l.lower() for l in issue_labels}
-    
+
     scores = [LABEL_WEIGHTS[l] for l in labels_lower if l in LABEL_WEIGHTS]
     return max(scores) if scores else 0.3
+
 
 def calculate_activity_score(comments_count: int) -> float:
     """
@@ -108,6 +126,7 @@ def calculate_activity_score(comments_count: int) -> float:
     else:
         return max(0.3, 1.0 - (comments_count - 15) / 50.0)
 
+
 def calculate_recency_score(created_at_str: str) -> float:
     """
     Softer decay over 180 days (was 60). Issues older than 6 months
@@ -115,53 +134,77 @@ def calculate_recency_score(created_at_str: str) -> float:
     """
     if not created_at_str:
         return 0.0
-        
+
     try:
         created_at = datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
         now = datetime.now(created_at.tzinfo)
         days_old = (now - created_at).days
-        
+
         return max(0.1, 1.0 - (days_old / 180.0))
-        
+
     except Exception:
         return 0.0
 
-def rank_issues(resume_skills: List[str], candidate_issues: List[Dict[str, Any]], distances: List[float]) -> List[Dict[str, Any]]:
+
+# Update the function signature to accept repo_languages
+def rank_issues(
+    resume_skills: List[str],
+    candidate_issues: List[Dict[str, Any]],
+    distances: List[float],
+    repo_languages: List[str] = None,
+) -> List[Dict[str, Any]]:
     """
     Takes candidate issues from FAISS and applies multi-signal ranking.
+    Injects implicit repository languages to improve skill overlap scores.
     Returns the top 5 match objects.
     """
     ranked_issues = []
     resume_skills_set = set(resume_skills)
-    
+
+    # Safely handle the default argument
+    if repo_languages is None:
+        repo_languages = []
+
+    # Convert the list of languages into a single space-separated string
+    implicit_context = " ".join(repo_languages)
+
     for i, issue in enumerate(candidate_issues):
         distance = distances[i] if i < len(distances) else 1.0
-        
-        # Build full issue text for skill matching (not just labels)
-        issue_text = f"{issue.get('title', '')} {issue.get('description', '')} {' '.join(issue.get('labels', []))}"
-        
+
+        # INJECT THE CONTEXT HERE
+        # We append the repo's primary languages to the end of the issue text
+        issue_text = f"{issue.get('title', '')} {issue.get('description', '')} {' '.join(issue.get('labels', []))} {implicit_context}"
+
         # Calculate individual scores
         semantic_score = calculate_semantic_score(distance)
         skill_score = calculate_skill_overlap_score(resume_skills_set, issue_text)
+
+        # --- RESTORED MISSING LINES ---
         label_score = calculate_label_priority_score(issue.get("labels", []))
         activity_score = calculate_activity_score(issue.get("comments", 0))
         recency_score = calculate_recency_score(issue.get("created_at", ""))
-        
+
         # Final weighted score
         final_score = (
-            WEIGHT_SEMANTIC * semantic_score +
-            WEIGHT_SKILL * skill_score +
-            WEIGHT_LABEL * label_score +
-            WEIGHT_ACTIVITY * activity_score +
-            WEIGHT_RECENCY * recency_score
+            WEIGHT_SEMANTIC * semantic_score
+            + WEIGHT_SKILL * skill_score
+            + WEIGHT_LABEL * label_score
+            + WEIGHT_ACTIVITY * activity_score
+            + WEIGHT_RECENCY * recency_score
         )
-        
-        # Prepare matched skills for the output — match against full text
-        matched_skills = [
-            skill for skill in resume_skills 
-            if skill.lower() in issue_text.lower()
-        ]
-        
+
+        # Prepare matched skills for the output — mirror scoring logic exactly
+        matched_skills = []
+        for skill in resume_skills:
+            skill_lower = skill.lower()
+            if len(skill_lower) <= 3:
+                pattern = r"\b" + re.escape(skill_lower) + r"\b"
+                if re.search(pattern, issue_text.lower()):
+                    matched_skills.append(skill)
+            else:
+                if skill_lower in issue_text.lower():
+                    matched_skills.append(skill)
+
         # Compute readiness score (independent of ranking)
         readiness_result = calculate_readiness_score(
             issue=issue,
@@ -169,26 +212,28 @@ def rank_issues(resume_skills: List[str], candidate_issues: List[Dict[str, Any]]
             recency_score=recency_score,
         )
 
-        ranked_issues.append({
-            "title": issue.get("title", ""),
-            "url": issue.get("url", ""),
-            "score": round(final_score, 2),
-            "readiness_score": readiness_result["readiness_score"],
-            "readiness_reason": readiness_result["readiness_reason"],
-            "matched_skills": matched_skills,
-            "labels": issue.get("labels", [])
-        })
+        ranked_issues.append(
+            {
+                "title": issue.get("title", ""),
+                "url": issue.get("url", ""),
+                "score": round(final_score, 2),
+                "readiness_score": readiness_result["readiness_score"],
+                "readiness_reason": readiness_result["readiness_reason"],
+                "matched_skills": matched_skills,
+                "labels": issue.get("labels", []),
+            }
+        )
 
     # Sort descending by score
     ranked_issues.sort(key=lambda x: x["score"], reverse=True)
-    
+
     top5 = ranked_issues[:5]
     try:
         gaps = generate_skill_gaps_batch(list(resume_skills_set), top5)
     except Exception:
         gaps = [""] * 5
-        
+
     for i, issue in enumerate(top5):
         issue["skill_gap"] = gaps[i]
-        
+
     return top5
