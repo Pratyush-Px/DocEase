@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List
 
+
 class MatchInfo(BaseModel):
     title: str
     url: str
@@ -9,9 +10,23 @@ class MatchInfo(BaseModel):
     readiness_reason: str
     matched_skills: List[str]
     labels: List[str]
+    skill_gap: str = ""
+
 
 class MatchResponse(BaseModel):
     user_skills: List[str]
     repo: str
     issues_scanned: int
     top_matches: List[MatchInfo]
+
+
+# schemas.py (add to the bottom)
+class ActionPlanRequest(BaseModel):
+    issue_title: str
+    issue_description: str
+    repo_url: str
+    user_skills: List[str]
+
+
+class ActionPlanResponse(BaseModel):
+    markdown_plan: str

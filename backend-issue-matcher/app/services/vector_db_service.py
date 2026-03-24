@@ -14,8 +14,12 @@ def get_repo_identifier(repo_url: str) -> str:
     """
     Returns a safe string identifier for a repository (e.g., 'huggingface_transformers')
     """
-    repo_path = repo_url.replace("https://github.com/", "").strip("/")
-    return repo_path.replace("/", "_")
+    repo_url = repo_url.strip()
+    if repo_url.startswith("topic:"):
+        topic = repo_url.replace("topic:", "").strip()
+        return f"topic_{topic}"
+    path = repo_url.replace("https://github.com/", "").strip("/")
+    return path.replace("/", "_")
 
 def get_index_paths(repo_identifier: str) -> Tuple[str, str]:
     """

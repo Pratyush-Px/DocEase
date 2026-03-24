@@ -10,3 +10,4 @@ faiss-cpu
 numpy
 scikit-learn
 python-multipart
+google-generativeai
