@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 class Settings(BaseSettings):
     github_token: str = ""
     gemini_api_key: str = ""
+    nvidia_api_key: str = ""
     faiss_index_dir: str = "data/faiss_index"
     
     class Config:
@@ -38,3 +39,10 @@ if not settings.gemini_api_key:
     )
 else:
     logger.info("Gemini API key detected. LLM features enabled.")
+
+if not settings.nvidia_api_key:
+    logger.warning(
+        "NVIDIA_API_KEY is not set. LLM summarization for contributing.md file will be skipped."
+    )
+else:
+    logger.info("NVIDIA API key detected. LLM features enabled.")

@@ -19,8 +19,8 @@ import httpx
 from fastapi import HTTPException
 from app.config import settings
 import re
-
-import re
+import requests
+from app.config import settings
 
 def extract_setup_steps(text: str):
     """
@@ -103,4 +103,49 @@ async def get_contributing_text(repo_url: str) -> str:
     owner, repo = extract_owner_repo(repo_url)
     text = await fetch_contributing_file(owner, repo)
     return text
+
+
+def generate_contribution_summary(text: str) -> str:
+    """
+    Uses NVIDIA model to summarize contribution guidelines
+    """
+
+    invoke_url = "https://integrate.api.nvidia.com/v1/chat/completions"
+    stream = False
     
+    headers = {
+    "Authorization": f"Bearer {settings.nvidia_api_key}",
+    "Accept": "text/event-stream" if stream else "application/json"
+    }
+
+    payload = {
+    "model": "moonshotai/kimi-k2.5",
+    "messages": [{"role":"user","content":f"Summarize this contribution guide:\n{text[:1000]}"}],
+    "max_tokens": 500,
+    "temperature": 1.00,
+    "top_p": 1.00,
+    "stream": stream,
+    "chat_template_kwargs": {"thinking":False},
+    }
+
+
+
+    response = requests.post(invoke_url, headers=headers, json=payload)
+
+    if response.status_code != 200:
+        return {"error": response.text}
+
+    if stream:
+        for line in response.iter_lines():
+            if line:
+                return line.decode("utf-8")
+    else:
+        return response.json()
+'''
+    data = response.json()
+
+    try:
+        return data["choices"][0]["message"]["content"]
+    except Exception:
+        return str(data)
+'''

@@ -21,6 +21,7 @@ import numpy as np
 import time
 from app.services.contribution_service import get_contributing_text
 from app.services.contribution_service import extract_setup_steps
+from app.services.contribution_service import generate_contribution_summary
 
 router = APIRouter()
 
@@ -228,10 +229,13 @@ async def get_contributing(repo_url: str = Form(...)):
     
         setup_steps = extract_setup_steps(text)
 
+        summary = generate_contribution_summary(text)
+
         return {
             "repo": repo_url,
             "setup_steps": setup_steps,
-            "content": text[:2000]
+            "llm_summary": summary,
+            "content": text[:1000]
         }
 
     except Exception as e:
