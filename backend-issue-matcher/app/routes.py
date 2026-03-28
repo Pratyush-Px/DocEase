@@ -22,6 +22,7 @@ import time
 from app.services.contribution_service import get_contributing_text
 from app.services.contribution_service import extract_setup_steps
 from app.services.contribution_service import generate_contribution_summary
+from app.services.repo_health_service import get_repo_health
 
 router = APIRouter()
 
@@ -238,5 +239,13 @@ async def get_contributing(repo_url: str = Form(...)):
             "content": text[:1000]
         }
 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/repo-health")
+async def repo_health(repo_url: str = Form(...)):
+    try:
+        result = await get_repo_health(repo_url)
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
