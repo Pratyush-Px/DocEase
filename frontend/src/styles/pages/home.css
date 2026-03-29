@@ -1,0 +1,192 @@
+.home-page {
+  padding-bottom: var(--space-8);
+}
+
+.hero-section {
+  text-align: center;
+  margin-top: var(--space-8);
+  margin-bottom: var(--space-6);
+  animation: fadeSlideUp var(--transition-base) forwards;
+}
+
+.hero-title {
+  font-size: 52px;
+  line-height: 1.1;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-subtitle {
+  font-family: var(--font-body);
+  font-size: 18px;
+  color: var(--color-text-muted);
+}
+
+.form-section {
+  display: flex;
+  justify-content: center;
+  animation: fadeSlideUp var(--transition-base) forwards;
+  animation-delay: 100ms;
+}
+
+.form-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  width: 100%;
+  max-width: 680px;
+  box-shadow: var(--shadow-sm);
+}
+
+.match-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.input-label {
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+  display: block;
+}
+
+/* Repo Input Styles */
+.repo-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.github-icon {
+  position: absolute;
+  left: var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.repo-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  padding-left: calc(var(--space-4) + 24px);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  transition: all var(--transition-fast);
+  outline: none;
+}
+
+.repo-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-light);
+}
+
+.input-success-icon {
+  position: absolute;
+  right: var(--space-3);
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.has-success .repo-input {
+  border-color: var(--color-success);
+}
+
+.has-error .repo-input {
+  border-color: var(--color-danger);
+  background-color: var(--color-danger-light);
+}
+
+.input-hint {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* Experience Pills */
+.experience-pills {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.pill-btn {
+  flex: 1;
+  padding: var(--space-3);
+  border: 2px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text-muted);
+  font-weight: 600;
+  border-radius: var(--radius-xl);
+  transition: all 200ms ease;
+  font-family: var(--font-body);
+}
+
+.pill-btn:hover {
+  border-color: var(--color-accent-light);
+  color: var(--color-text-primary);
+}
+
+.pill-btn.active {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
+/* Submit Button */
+.btn-submit {
+  width: 100%;
+  height: 48px;
+  background-color: var(--color-accent);
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  margin-top: var(--space-2);
+}
+
+.btn-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-accent);
+}
+
+.btn-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 36px;
+  }
+  .form-card {
+    padding: var(--space-4);
+  }
+  .experience-pills {
+    flex-wrap: wrap;
+  }
+  .pill-btn {
+    flex-basis: calc(33.33% - var(--space-2));
+  }
+}
