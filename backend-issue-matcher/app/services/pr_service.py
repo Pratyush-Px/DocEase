@@ -1,3 +1,7 @@
+import requests
+from app.config import settings
+
+
 def generate_pr_draft(issue_title: str, issue_description: str, solution_description: str, repo_url: str):
     """
     Generate a structured PR draft from issue details
@@ -33,9 +37,6 @@ def generate_pr_draft(issue_title: str, issue_description: str, solution_descrip
         "testing": testing,
         "checklist": checklist
     }
-
-import requests
-from app.config import settings
 
 def generate_pr_draft_ai(issue_title: str, issue_description: str,  solution_description: str, repo_url: str):
     """
