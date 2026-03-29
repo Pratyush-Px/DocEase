@@ -23,6 +23,9 @@ from app.services.contribution_service import get_contributing_text
 from app.services.contribution_service import extract_setup_steps
 from app.services.contribution_service import generate_contribution_summary
 from app.services.repo_health_service import get_repo_health
+from app.services.pr_service import generate_pr_draft, generate_pr_draft_ai
+from app.config import settings
+from app.services.coding_chatbot import ask_coding_question
 
 router = APIRouter()
 
@@ -247,5 +250,42 @@ async def repo_health(repo_url: str = Form(...)):
     try:
         result = await get_repo_health(repo_url)
         return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/generate-pr")
+async def generate_pr(
+    issue_title: str = Form(...),
+    issue_description: str = Form(...),
+    solution_description: str = Form(...),
+    repo_url: str = Form(...)
+):
+    try:
+        if settings.nvidia_api_key:
+            result = generate_pr_draft_ai(issue_title, issue_description, solution_description, repo_url)
+        else:
+            result = generate_pr_draft(issue_title, issue_description, solution_description, repo_url)
+
+        return {"pr_draft": result}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/ask-coding")
+async def ask_coding(
+    question: str = Form(...),
+    issue_title: str = Form(""),
+    issue_description: str = Form(""),
+    repo_url: str = Form("")
+):
+    try:
+        result = ask_coding_question(
+            question,
+            issue_title,
+            issue_description,
+            repo_url
+        )
+        return {"answer": result}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
