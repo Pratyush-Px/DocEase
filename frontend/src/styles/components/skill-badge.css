@@ -1,0 +1,23 @@
+.skill-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 12px;
+  animation: badgePop 400ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 0;
+  /* animation-delay depends on var(--i) passed via inline style */
+  animation-delay: calc(var(--i) * 50ms);
+}
+
+.skill-badge.matched {
+  background-color: var(--color-accent-light);
+  color: var(--color-accent-dark);
+}
+
+.skill-badge.neutral {
+  background-color: var(--color-surface-alt);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}

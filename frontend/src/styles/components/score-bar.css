@@ -1,0 +1,59 @@
+.score-bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.score-bar-labels {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.score-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.score-value {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+}
+
+.score-bar-bg {
+  flex: 1;
+  height: 8px;
+  background-color: var(--color-surface-alt);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.score-bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 4px;
+  width: 0;
+}
+
+.score-bar-fill.start-anim {
+  animation: fillBar 800ms var(--transition-slow) forwards;
+}
+
+.score-bar-fill.high { background-color: var(--color-score-high); }
+.score-bar-fill.mid { background-color: var(--color-score-mid); }
+.score-bar-fill.low { background-color: var(--color-score-low); }
+
+@media (max-width: 640px) {
+  .score-bar-labels {
+    width: 100px;
+  }
+}
