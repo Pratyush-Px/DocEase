@@ -55,11 +55,37 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 @media (max-width: 1024px) {
   .panel-wrapper {
     position: static;
     margin-top: var(--space-4);
+  }
+}
+
+.results-layout {
+  display: flex;
+  gap: var(--space-6);
+  align-items: flex-start;
+}
+
+.results-layout__left {
+  flex: 1;
+  min-width: 0;
+}
+
+.results-layout__right {
+  flex: 0 0 380px;
+}
+
+@media (max-width: 1024px) {
+  .results-layout {
+    flex-direction: column;
+  }
+  .results-layout__right {
+    flex: 1 1 auto;
+    width: 100%;
   }
 }

@@ -10,9 +10,9 @@ export default function Header() {
       <div className="container header-container">
         <Link to="/" className="logo">
           <span className="logo-icon">◈</span>
-          ResumeIssueHunter
+          DocEase
         </Link>
-        
+
         {showNewSearch && (
           <Link to="/" className="btn-new-search">
             &larr; New Search

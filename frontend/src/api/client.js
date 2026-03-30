@@ -36,3 +36,23 @@ export async function getRepoHealth(repoUrl) {
   const { data } = await api.post('/repo-health', form);
   return data; // { stars, forks, open_issues, health_score, insights, summary }
 }
+
+export async function generatePRDraft({ issueTitle, issueDescription, solutionDescription, repoUrl }) {
+  const form = new FormData();
+  form.append('issue_title', issueTitle);
+  form.append('issue_description', issueDescription);
+  form.append('solution_description', solutionDescription);
+  form.append('repo_url', repoUrl);
+  const { data } = await api.post('/generate-pr', form);
+  return data; // { pr_draft: string | object }
+}
+
+export async function askCodingQuestion({ question, issueTitle = '', issueDescription = '', repoUrl = '' }) {
+  const form = new FormData();
+  form.append('question', question);
+  form.append('issue_title', issueTitle);
+  form.append('issue_description', issueDescription);
+  form.append('repo_url', repoUrl);
+  const { data } = await api.post('/ask-coding', form);
+  return data; // { answer: string }
+}
