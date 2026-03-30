@@ -7,6 +7,8 @@ import SkillBadge from '../components/results/SkillBadge';
 import ActionPlanPanel from '../components/panels/ActionPlanPanel';
 import ContributingPanel from '../components/panels/ContributingPanel';
 import RepoHealthPanel from '../components/panels/RepoHealthPanel';
+import PRDraftPanel from '../components/panels/PRDraftPanel';
+import AskAIPanel from '../components/panels/AskAIPanel';
 import EmptyState from '../components/common/EmptyState';
 import '../styles/pages/results.css';
 
@@ -114,6 +116,18 @@ export default function Results() {
                   >
                     Repo Health
                   </button>
+                  <button 
+                    className={`tab-btn ${activeTab === 'pr' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('pr')}
+                  >
+                    PR Draft
+                  </button>
+                  <button 
+                    className={`tab-btn ${activeTab === 'chat' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('chat')}
+                  >
+                    Ask AI
+                  </button>
                 </nav>
                 
                 <div className="panel-body">
@@ -137,6 +151,12 @@ export default function Results() {
                       setRepoHealth={setRepoHealth} 
                       repoUrl={repoUrl} 
                     />
+                  )}
+                  {activeTab === 'pr' && (
+                    <PRDraftPanel />
+                  )}
+                  {activeTab === 'chat' && (
+                    <AskAIPanel />
                   )}
                 </div>
               </aside>

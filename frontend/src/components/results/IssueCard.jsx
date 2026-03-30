@@ -1,10 +1,32 @@
+import { useContext } from 'react';
+import { ResultsContext } from '../../context/ResultsContext';
 import ScoreBar from './ScoreBar';
 import SkillBadge from './SkillBadge';
 import SkillGapBox from './SkillGapBox';
 import '../../styles/components/issue-card.css';
 
 export default function IssueCard({ issue, index, onGenerateActionPlan, isGenerating }) {
-  const { title, url, score, readiness_score, matched_skills, labels, skill_gap } = issue;
+  const { title, url, score, readiness_score, matched_skills, labels, skill_gap, description } = issue;
+  
+  const { 
+    setPrDraftIssue, 
+    setActiveTab, 
+    setChatIssueContext 
+  } = useContext(ResultsContext);
+
+  const handleGeneratePRDraft = () => {
+    setPrDraftIssue(issue);
+    setActiveTab('pr');
+    const panel = document.querySelector('.panel-wrapper');
+    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleAskAI = () => {
+    setChatIssueContext({ title, description: description || url });
+    setActiveTab('chat');
+    const panel = document.querySelector('.panel-wrapper');
+    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
     <div className="issue-card" style={{ '--i': index }}>
@@ -42,17 +64,23 @@ export default function IssueCard({ issue, index, onGenerateActionPlan, isGenera
 
       <div className="issue-actions">
         <button 
-          className="btn-action-plan"
+          className="btn-action-plan btn"
           onClick={() => onGenerateActionPlan(issue)}
           disabled={isGenerating}
         >
-          {isGenerating ? 'Generating...' : 'Generate Action Plan'}
+          {isGenerating ? 'Generating...' : 'Action Plan'}
+        </button>
+        <button className="btn-pr-draft btn" onClick={handleGeneratePRDraft}>
+          PR Draft
+        </button>
+        <button className="btn-ask-ai btn" onClick={handleAskAI}>
+          Ask AI
         </button>
         <a 
           href={url} 
           target="_blank" 
           rel="noopener noreferrer" 
-          className="btn-view-issue"
+          className="btn-view-issue btn"
         >
           View Issue &rarr;
         </a>
